@@ -1,0 +1,12 @@
+rhoT :  4.09 # gram/cm^3
+omegap : 19. # eV;
+A : 65 # This only includes Zn, need to modify so that Migdal can be applied to both Zn, S
+Z : 30 # This only includes Zn, need to modify so that Migdal can be applied to both Zn, S
+Zion: 2.0 
+E_gap: 3.54
+ombar: 0.018 # average phonon frequency in eV
+mermin_ref: "Calculations of Energy-Loss Function for 26 Materials, Chinese Journal of Chemical Physics 29, 663 (2016); https://doi.org/10.1063/1674-0068/29/cjcp1605110, Yang Sun, Huan Xu, Bo Da, Shi-feng Mao, and Ze-jun Ding"
+eps_0: 8.34
+eps_inf: 5.13
+LOvec: [0.043]  # eV
+TOvec: [0.0338]  # eV

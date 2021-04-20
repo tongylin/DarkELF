@@ -1,0 +1,13 @@
+rhoT : 5.32  # gram/cm^3
+Z: 33 # take As for now
+A : 75  # take As for now
+Zion : 5 # five valence electrons
+E_gap : 1.42
+eps_0: 12.9
+eps_inf: 10.9
+LOvec: [0.0366]  # eV
+TOvec: [0.0336]  # eV
+e0 : 4.7  #for electron yield, epsilon in (5.2) of 1509.01598. taken from Citation: J. Appl. Phys. 39, 2029 (1968); doi: 10.1063/1.1656484
+omegap : 16.0
+ombar: 0.018 # average phonon frequency in eV
+merin_ref: "Y. Tu, C. Kwei and C. Tung, Angular and energy dependences of the surface excitation parameter for semiconducting iii–v compounds, Surface Science 601 (2007) 865."

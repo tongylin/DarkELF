@@ -1,0 +1,12 @@
+rhoT :  3.98 # gram/cm^3
+omegap : 24. # eV; from W. J. Gignac, R. Stanley Williams, and Steven P. Kowalczyk, Phys. Rev. B 32, 1237
+alattice : [4.81, 13.11] # Angstrom
+A : 27 # This only includes Al, need to modify so that Migdal can be applied to both Al, O
+Z : 13 # This only includes Al, need to modify so that Migdal can be applied to both Al, O
+eps_0: 11.5
+eps_inf: 3.2
+LOvec: [0.10923861277724489, 0.06334128619667961] # eV; From M. Schubert, T. E. Tiwald, and C. M. Herzinger, Phys. Rev. B 61, 8187 (2000).
+TOvec: [0.07220584278909026, 0.04928197546130388]
+E_gap: 8.8
+Zion: 3.0
+mermin_ref: "Y. Sun, H. Xu, B. Da, S.-f. Mao and Z.-j. Ding, Calculations of Energy-Loss Function for 26 Materials, Chinese Journal of Chemical Physics 9 (2016) 663."

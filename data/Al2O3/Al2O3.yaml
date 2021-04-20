@@ -1,0 +1,13 @@
+rhoT :  3.98 # gram/cm^3
+omegap : 24. # eV; from W. J. Gignac, R. Stanley Williams, and Steven P. Kowalczyk, Phys. Rev. B 32, 1237
+alattice : [4.81, 13.11] # Angstrom
+A : 27 # This only includes Al, need to modify so that Migdal can be applied to both Al, O
+Z : 13 # This only includes Al, need to modify so that Migdal can be applied to both Al, O
+eps_0: 9.3
+eps_inf: 3.2
+LOvec: [0.11240009799551721, 0.07804529195695797, 0.05972107567222661, 0.04805457531773933] # eV; From M. Schubert, T. E. Tiwald, and C. M. Herzinger, Phys. Rev. B 61, 8187 (2000).
+TOvec: [0.07855360918813117, 0.07054451330184128, 0.05443953566052461, 0.04773222780528803]
+E_gap: 8.8
+Zion: 3.0
+ombar: 0.022 # average phonon frequency in eV
+mermin_ref: "Y. Sun, H. Xu, B. Da, S.-f. Mao and Z.-j. Ding, Calculations of Energy-Loss Function for 26 Materials, Chinese Journal of Chemical Physics 9 (2016) 663."

@@ -1,0 +1,12 @@
+# All parameter here are for 3C structure by default
+rhoT : 3.2  # gram/cm^3
+Z: 14 # take Si for now
+A : 28  # take Si for now
+Zion : 4 # four valence electrons
+E_gap : 2.39
+eps_0: 9.7
+eps_inf: 6.5
+LOvec: [0.121]  # eV
+TOvec: [0.099]  # eV
+e0 : 6.5  # estimate for electron yield, see Table 1 of 2008.08560
+omegap : 22.1

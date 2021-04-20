@@ -1,0 +1,5 @@
+rhoT : 3.51 # gram/cm^3
+alattice : 3.57
+A : 12
+Zion : 4.
+Enl_list : [288,16.6,11.3] # Energies of Ibe et al. Migdal calculation

@@ -1,0 +1,9 @@
+rhoT :  2.7 # gram/cm^3
+omegap : 15.
+alattice : 4.046 # Angstrom
+A : 27
+Z : 13
+E_gap: 0.0
+Zion: 3.0
+ombar: 0.015 # average phonon frequency in eV
+mermin_ref: "Y. Sun, H. Xu, B. Da, S.-f. Mao and Z.-j. Ding, Calculations of Energy-Loss Function for 26 Materials, Chinese Journal of Chemical Physics 9 (2016) 663."
