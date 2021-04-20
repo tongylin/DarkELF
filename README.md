@@ -7,6 +7,9 @@ See arXiv xxxx.xxxx for a description of the implementation
 ## Authors
 
 Simon Knapen, Jonathan Kozaczuk and Tongyan Lin
+smknapen@lbl.gov
+tongyan@physics.ucsd.edu
+
 ## Physics
 ### ELF
 
@@ -28,7 +31,7 @@ DM - phonon scattering through a light dark photon mediator (arXiv [1712.06598](
 
 If the DM is itself a light dark photon, it can be absorbed on phonons (arXiv [1712.06598](https://arxiv.org/abs/1712.06598), [1807.10291](https://arxiv.org/abs/1807.10291)) or electrons (arXiv [1608.02123](https://arxiv.org/abs/1608.02123), [1608.01994](https://arxiv.org/abs/1608.01994)), the rate of which can be extracted directly from the ELF.
 
-## Requirements and ssage
+## Requirements and Usage
 
 DarkELF requires python 3.6 or higher, equipped with the numpy, scipy, pyyaml and pandas packages. The tutorial notebooks require a jupyter installation, but this is in general not needed for DarkELF itself.
 
