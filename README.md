@@ -7,8 +7,6 @@ See arXiv xxxx.xxxx for a description of the implementation
 ## Authors
 
 Simon Knapen, Jonathan Kozaczuk and Tongyan Lin
-smknapen@lbl.gov
-tongyan@physics.ucsd.edu
 
 ## Physics
 ### ELF
