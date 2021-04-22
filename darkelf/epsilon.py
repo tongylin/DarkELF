@@ -14,13 +14,17 @@ def load_epsilon_grid(self,datadir,filename):
     
     if (not os.path.exists(fname)):
         self.electron_ELF_loaded=False
-        print("Warning! Epsilon grid in electron regime does not exist. Please choose one of the following for filename:")
-        for file in glob.glob(datadir +str(self.target)+"/*dat"):
-            print('\t',file.split("/")[-1])
+        print("Warning! Epsilon grid in electron regime does not exist.")
+        
         om = np.arange(10)
         k = np.arange(10)
         e1 = np.zeros((10,10))
         e2 = np.zeros((10,10))
+        
+        self.kmin = 0.0
+        self.kmax = 1.0e5
+        self.ommax = 100.0
+        
         return om, k, e1, e2
     else:
         self.electron_ELF_loaded=True

@@ -118,11 +118,12 @@ def R_electron(self,threshold=-1.0,sigmae=1e-38, kcut = 0, withscreening=True, m
           if(hasattr(self, "e0")):
             threshold=self.E_gap+self.e0
           else:
-            threshold=2.0*self.E_gap
-    olist=np.linspace(threshold,self.ommax,200)
+            threshold=np.max([2.0*self.E_gap,1e-3]) # prevent zero threshold for metals
+  
+    olist=np.linspace(threshold,np.min([self.ommax,0.5*(self.vesc+self.veavg)**2*self.mX]),200)
     return integrate.trapz(self.dRdomega_electron(olist,sigmae=sigmae,kcut=kcut, \
         withscreening=withscreening,method=method), x=olist)
-
+    
 
 ############################################################################################
 
