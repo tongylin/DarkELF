@@ -2,7 +2,7 @@
 
 DarkELF is a python package capable of calculating interaction rates of light dark matter in dielectric materials, including screening effects. The full response of the material is parametrized in the terms of the energy loss function (ELF) of material, which DarkELF converts into differential scattering rates for both direct dark matter electron scattering and through the Migdal effect. In addition, DarkELF can calculate the rate to produce phonons from sub-MeV dark matter scattering via the dark photon mediator, as well as the absorption rate for dark matter comprised of dark photons. The package currently includes precomputed ELFs for Al,Al2O3, GaAs, GaN, Ge, Si, SiO2, and ZnS, and allows the user to easily add their own ELF extractions for arbitrary materials.
 
-See arXiv xxxx.xxxx for a description of the implementation
+See arXiv [2104.12786](https://arxiv.org/abs/2104.12786) for a description of the implementation
 
 ## Authors
 
@@ -11,7 +11,7 @@ Simon Knapen, Jonathan Kozaczuk and Tongyan Lin
 ## Physics
 ### ELF
 
-Currently DarkELF contains ELF look-up tables obtained with the [GPAW](https://wiki.fysik.dtu.dk/gpaw/) density functional theory code for Si and Ge, as well as data-driven Mermin model for the remaining materials. The Lindhard ELF is also included. DarkELF also comes with a number of measured ELFs in the optical limit for energy depositions below the electronic band gap, which is relevant for phonon processes. Additional materials and ELF computations may be added at a later date. When using a particular ELF computation, please refer to the relevant experimental papers and/or GPAW package. These references can be found in arXiv xxxx.xxxx. 
+Currently DarkELF contains ELF look-up tables obtained with the [GPAW](https://wiki.fysik.dtu.dk/gpaw/) density functional theory code for Si and Ge, as well as data-driven Mermin model for the remaining materials. The Lindhard ELF is also included. DarkELF also comes with a number of measured ELFs in the optical limit for energy depositions below the electronic band gap, which is relevant for phonon processes. Additional materials and ELF computations may be added at a later date. When using a particular ELF computation, please refer to the relevant experimental papers and/or GPAW package. These references can be found in arXiv [2104.12786](https://arxiv.org/abs/2104.12786). 
 
 ### DM electron scattering
 
@@ -37,4 +37,4 @@ The examples folder contains a tutorial jupyter notebook for each of the process
 
 ## Citation guide
 
-If you use DarkELF, please refer to the corresponding paper arXiv xxxx.xxxx. For the specific processes, please refer to the papers outlined in the sections above.
+If you use DarkELF, please refer to the corresponding paper arXiv [2104.12786](https://arxiv.org/abs/2104.12786). For the specific processes, please refer to the papers outlined in the sections above.
