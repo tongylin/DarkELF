@@ -86,7 +86,7 @@ class darkelf(object):
     from .phonon import R_phonon_Frohlich, _R_phonon_Frohlich_branch
     from .phonon import R_phonon, dRdomega_phonon, dRdomegadk_phonon
 
-    from .Migdal import load_Migdal_FAC, _I, _J, _Jold, _incomErf, _Fcrystal
+    from .Migdal import load_Migdal_FAC, _I, _J, _incomErf
     from .Migdal import dPdomega, dPdomegadk, dRdEn_nuclear, dRdomega_migdal, R_migdal, tabulate_I
     
     from .absorption import R_absorption
