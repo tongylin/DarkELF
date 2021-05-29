@@ -30,7 +30,7 @@ def load_epsilon_grid(self,datadir,filename):
         self.electron_ELF_loaded=True
         print("Loaded " + filename + " for epsilon in electron regime")
     
-    data = pd.read_csv(fname, sep=" ",header=None,
+    data = pd.read_csv(fname, delim_whitespace=True,header=None,
                 names=['omega', 'k', 'eps1', 'eps2'])
     
     data.fillna(inplace=True,method='bfill')# fill in some NaN values

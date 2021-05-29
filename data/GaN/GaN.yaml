@@ -9,4 +9,4 @@ eps_inf: 5.3
 LOvec: [0.091]  # eV
 TOvec: [0.067]  # eV
 ombar: 0.018 # average phonon frequency in eV
-merin_ref: "Y. Tu, C. Kwei and C. Tung, Angular and energy dependences of the surface excitation parameter for semiconducting iii–v compounds, Surface Science 601 (2007) 865."
+mermin_ref: "Y. Tu, C. Kwei and C. Tung, Angular and energy dependences of the surface excitation parameter for semiconducting iii–v compounds, Surface Science 601 (2007) 865."
