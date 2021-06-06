@@ -94,7 +94,7 @@ def dRdomega_electron(self,omega, sigmae=1e-38, kcut=0, withscreening=True, meth
         return dRdomega
         
 
-def R_electron(self,threshold=-1.0,sigmae=1e-38, kcut = 0, withscreening=True, method="grid"):
+def R_electron(self,threshold=-1.0,Emax=-1.0,sigmae=1e-38, kcut = 0, withscreening=True, method="grid"):
     """
     Returns total number of events per 1/kg/yr, normalized to a reference cross section sigmae.
     Inputs
@@ -105,6 +105,9 @@ def R_electron(self,threshold=-1.0,sigmae=1e-38, kcut = 0, withscreening=True, m
         energy threshold in eV. Defaults to the 2e- threshold 
         when the average number of ionization electrons is available. If this information is not available,
         the default threshold is twice the bandgap.
+    Emax: float
+        max energy considered in reach. Will integrate over the minimum of 
+          [max kinematically accessible energy, max of energy range in ELF grid, Emax]
     kcut: float
         option to include a maximum k value in the integration (helpful if you
         wish to avoid to using ELF in high k regime where it may be more uncertain)
@@ -120,7 +123,12 @@ def R_electron(self,threshold=-1.0,sigmae=1e-38, kcut = 0, withscreening=True, m
           else:
             threshold=np.max([2.0*self.E_gap,1e-3]) # prevent zero threshold for metals
   
-    olist=np.linspace(threshold,np.min([self.ommax,0.5*(self.vesc+self.veavg)**2*self.mX]),200)
+    if (Emax < 1.0):
+        Emax = np.min([self.ommax,0.5*(self.vesc+self.veavg)**2*self.mX])
+    else:
+        Emax = np.min([self.ommax,0.5*(self.vesc+self.veavg)**2*self.mX, Emax])
+
+    olist=np.linspace(threshold,Emax,200)
     return integrate.trapz(self.dRdomega_electron(olist,sigmae=sigmae,kcut=kcut, \
         withscreening=withscreening,method=method), x=olist)
     
