@@ -5,8 +5,8 @@ def list_all(path=os.path.dirname(__file__)+"/../data/"):
     List available target materials in data directory
     """
 
-    for file in glob.glob(path+"*/"):
-        print('\t',file.split("/")[-2])
+    for file in glob.glob(path+"*"):
+        print('\t',file.split("/")[-1])
 
 def files(target,path=os.path.dirname(__file__)+"/../data/"):
     """
