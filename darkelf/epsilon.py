@@ -30,7 +30,11 @@ def load_epsilon_grid(self,datadir,filename):
         self.electron_ELF_loaded=True
         print("Loaded " + filename + " for epsilon in electron regime")
     
-    data = pd.read_csv(fname, delim_whitespace=True,header=None,
+    with open(fname) as f:
+      citation = f.readline().replace("\n","")
+      print("electronic ELF taken or calculated from "+citation)
+    
+    data = pd.read_csv(fname, delim_whitespace=True,header=None,skiprows=1,
                 names=['omega', 'k', 'eps1', 'eps2'])
     
     data.fillna(inplace=True,method='bfill')# fill in some NaN values
@@ -66,7 +70,12 @@ def load_epsilon_phonon(self,datadir,filename):
         self.phonon_ELF_loaded=False
     else:
         self.phonon_ELF_loaded=True
-        phonondat = np.loadtxt(phonon_path).T
+        
+        with open(phonon_path) as f:
+          citation = f.readline().replace("\n","")
+          print("phonon ELF taken or calculated from "+citation)
+        
+        phonondat = np.loadtxt(phonon_path,skiprows=1).T
         print("Loaded " + filename + " for epsilon in phonon regime")
         self.eps1_phonon = interp1d(phonondat[0],phonondat[1],\
             fill_value=(phonondat[1][0],phonondat[1][-1]),bounds_error=False)

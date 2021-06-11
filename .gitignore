@@ -2,3 +2,4 @@ examples/data/*
 !examples/data/*txt
 examples/plots/*
 !examples/plots/*pdf
+examples/darkelf_tester.ipynb
