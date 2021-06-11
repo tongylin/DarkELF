@@ -80,7 +80,7 @@ def dRdEn_nuclear(self,En,sigma_n=1e-40):
 ################################################      
       
 # dP/dkdomega
-def dPdomegadk(self,omega,k,En,method="grid"):
+def dPdomegadk(self,omega,k,En,method="grid",Zionkdependence=True):
     """ 
     Returns double differential ionization probability dP/domega dk, in the soft limit 
 
@@ -94,6 +94,8 @@ def dPdomegadk(self,omega,k,En,method="grid"):
         Nuclear recoil energy in [eV]
     method: ["grid","Lindhard"]
         use interpolated grid of epsilon, or Lindhard analytic epsilon    
+    Zionkdependence: boole
+        Include the momentum dependence of Zion(k)
     Outputs
     -------
     dP/domega dk for the specified En, in [1/eV^2]
@@ -105,7 +107,10 @@ def dPdomegadk(self,omega,k,En,method="grid"):
     
     for i in range(len(omega)):
       if(hasattr(self, "Zion") and self.electron_ELF_loaded):
-        dPdomegadk[i]=(2.0*self.alphaEM*self.Zion**2*vN**2)/(3.0*np.pi**2*omega[i]**4)*k**2*self.elf(omega[i],k,method=method)
+        if(Zionkdependence and self.Zion_loaded):
+          dPdomegadk[i]=(2.0*self.alphaEM*self.Zion_k(k)**2*vN**2)/(3.0*np.pi**2*omega[i]**4)*k**2*self.elf(omega[i],k,method=method)
+        else:
+          dPdomegadk[i]=(2.0*self.alphaEM*self.Zion**2*vN**2)/(3.0*np.pi**2*omega[i]**4)*k**2*self.elf(omega[i],k,method=method)
       else:
         if(i==0): print("This function is not available for "+self.target)
         dPdomegadk[i]=0.0
@@ -116,7 +121,7 @@ def dPdomegadk(self,omega,k,En,method="grid"):
         return dPdomegadk  
       
 # dP/domega
-def dPdomega(self,omega,En,method="grid",kcut=0,Nshell=0):
+def dPdomega(self,omega,En,method="grid",kcut=0,Nshell=0,Zionkdependence=True):
     """ 
     Returns differential ionization probability dP/domega, in the soft limit 
 
@@ -135,8 +140,9 @@ def dPdomega(self,omega,En,method="grid",kcut=0,Nshell=0):
         Only used if method="grid" is selected.
     Nshell: int
         Number of atomic shells included in the Ibe et. al. calculation. Only used if method="Ibe" is selected.
-        By default, all available shells are included.   
-
+        By default, all available shells are included.
+    Zionkdependence:  boole
+        Include the momentum dependence of Zion(k)    
     Outputs
     -------
     dP/domega for the specified En, in [1/eV]
@@ -157,7 +163,7 @@ def dPdomega(self,omega,En,method="grid",kcut=0,Nshell=0):
           if(kcut == 0):
             kcut = self.kmax
           # perform integral in log-space, for better convergence  
-          dPdomega[i]=integrate.quad(lambda logk: 10**logk*np.log(10.)*self.dPdomegadk(omega[i],10**logk,En,method=method),1.0,np.log10(kcut),limit=100,full_output=1)[0]
+          dPdomega[i]=integrate.quad(lambda logk: 10**logk*np.log(10.)*self.dPdomegadk(omega[i],10**logk,En,method=method,Zionkdependence=Zionkdependence),1.0,np.log10(kcut),limit=100,full_output=1)[0]
         else:
           if(i==0): print("This function is not available for "+self.target)
           dPdomega[i]=0.0
@@ -190,9 +196,9 @@ def dPdomega(self,omega,En,method="grid",kcut=0,Nshell=0):
 ################################################
 
 # auxiliary function I(omega)=1/En dP/domega              
-def _I(self,omega,method,kcut,Nshell):
+def _I(self,omega,method,kcut,Nshell,Zionkdependence):
     if(hasattr(self, "Zion") and self.electron_ELF_loaded):
-        return self.dPdomega(omega,1.0,method=method,kcut=kcut,Nshell=Nshell)
+        return self.dPdomega(omega,1.0,method=method,kcut=kcut,Nshell=Nshell,Zionkdependence=Zionkdependence)
     else:
         print("This function is not available for "+self.target)
         return 0.0
@@ -200,7 +206,7 @@ def _I(self,omega,method,kcut,Nshell):
     
 # pretabulate "I(omega)" and store as an interpolated function. This can be used to speed up the computation of the rate
 # the user can call this function to overwrite the stored function with different settings      
-def tabulate_I(self,method="grid",kcut=0,Nshell=0):
+def tabulate_I(self,method="grid",kcut=0,Nshell=0,Zionkdependence=True):
     """ 
     tabulates and interpolates I(omega)=1/En dP/domega and stores the result as an internal function, which can be used to speed up the rate calculations 
 
@@ -215,15 +221,16 @@ def tabulate_I(self,method="grid",kcut=0,Nshell=0):
         Only used if method="grid" is selected.
     Nshell: int
         Number of atomic shells included in the Ibe et. al. calculation. Only used if method="Ibe" is selected.
-        By default, all available shells are included.   
-
+        By default, all available shells are included.
+    Zionkdependence:  boole
+        Include the momentum dependence of Zion(k)    
     Outputs
     -------
     None
     """
     if(hasattr(self, "Zion") and self.electron_ELF_loaded):
       omlist=np.linspace(np.max([2.0*self.E_gap,1.0]),self.ommax,50) # start the integral at twice the band gap, as GPAW data is noisy for E_gap < omega < 2 E_gap. Require omega > 1.0 eV, to avoid NaN for materials with E_gap=0.0.
-      Ilist=self._I(omlist,method,kcut,Nshell)
+      Ilist=self._I(omlist,method=method,kcut=kcut,Nshell=Nshell,Zionkdependence=Zionkdependence)
       self.I_tab=interp1d(omlist,Ilist,fill_value=0.0,bounds_error=False)
   
       
@@ -273,7 +280,7 @@ def _J(self,v,omega,approximation,Enth,sigma_n):
     
 
 # Migdal rate    
-def dRdomega_migdal(self,omega,Enth=-1.0,sigma_n=1e-38,method="grid",approximation="free",kcut=0,Nshell=0,fast=False):
+def dRdomega_migdal(self,omega,Enth=-1.0,sigma_n=1e-38,method="grid",approximation="free",kcut=0,Nshell=0,Zionkdependence=True,fast=False):
     """ 
     Returns differential rate for ionization from the Migdal effect, in 1/kg/yr/eV
 
@@ -296,6 +303,8 @@ def dRdomega_migdal(self,omega,Enth=-1.0,sigma_n=1e-38,method="grid",approximati
     Nshell: int
         Number of atomic shells included in the Ibe et. al. calculation. Only used if method="Ibe" is selected.
         By default, all available shells are included.
+    Zionkdependence: boole
+        Include the momentum dependence of Zion(k)    
     fast: boole 
         If set to "True", darkELF will use the pretabulated shake-off probability, to speed up the computation. The pretabulated shake-off probability can be updated by calling the "tabulate_I" function. The default for this flag is "False". If fast is set to "True", the "method", "kcut" and "Nshell" flags are ignored.
     """
@@ -321,7 +330,7 @@ def dRdomega_migdal(self,omega,Enth=-1.0,sigma_n=1e-38,method="grid",approximati
           if(fast): # use pretabulated shake-off probability, to speed up computation
             dRdomega[i]=self.rhoX/(self.mN*self.mX)*self.I_tab(omega[i])*vint*self.c0cms*self.yeartosec/self.eVtokg
           else:
-            dRdomega[i]=self.rhoX/(self.mN*self.mX)*self._I(omega[i],method=method,kcut=kcut,Nshell=Nshell)*vint*self.c0cms*self.yeartosec/self.eVtokg
+            dRdomega[i]=self.rhoX/(self.mN*self.mX)*self._I(omega[i],method=method,kcut=kcut,Nshell=Nshell,Zionkdependence=Zionkdependence)*vint*self.c0cms*self.yeartosec/self.eVtokg
       else:
         if(i==0): print("This function is not available for "+self.target)
         dRdomega[i]=0.0
@@ -334,7 +343,7 @@ def dRdomega_migdal(self,omega,Enth=-1.0,sigma_n=1e-38,method="grid",approximati
     
     
     
-def R_migdal(self,threshold=-1.0,sigma_n=1e-38,Enth=-1.0,method="grid",approximation="free",kcut=0,Nshell=0,fast=False):
+def R_migdal(self,threshold=-1.0,sigma_n=1e-38,Enth=-1.0,method="grid",approximation="free",kcut=0,Nshell=0,Zionkdependence=True,fast=False):
     """ 
     Returns integrated rate for ionization from the Migdal effect, in 1/kg/yr
 
@@ -358,6 +367,8 @@ def R_migdal(self,threshold=-1.0,sigma_n=1e-38,Enth=-1.0,method="grid",approxima
     Nshell: int
         Number of atomic shells included in the Ibe et. al. calculation. Only used if method="Ibe" is selected.
         By default, all available shells are included.
+    Zionkdependence:
+        Include the momentum dependence of Zion(k)    
     fast: boole 
         If set to "True", darkELF will use the pretabulated shake-off probability, to speed up the computation. The pretabulated shake-off probability can be updated by calling the "tabulate_I" function. The default for this flag is "False". If fast is set to "True", the "method", "kcut" and "Nshell" flags are ignored.      
     """
@@ -367,5 +378,5 @@ def R_migdal(self,threshold=-1.0,sigma_n=1e-38,Enth=-1.0,method="grid",approxima
           else:
             threshold=2.0*self.E_gap
     olist=np.linspace(threshold,self.ommax,200)
-    return integrate.trapz(self.dRdomega_migdal(olist,Enth=Enth,sigma_n=sigma_n,method=method,approximation=approximation,kcut=kcut,Nshell=Nshell,fast=fast), x=olist)    
+    return integrate.trapz(self.dRdomega_migdal(olist,Enth=Enth,sigma_n=sigma_n,method=method,approximation=approximation,kcut=kcut,Nshell=Nshell,Zionkdependence=Zionkdependence,fast=fast), x=olist)    
     

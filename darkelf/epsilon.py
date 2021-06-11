@@ -84,6 +84,27 @@ def load_epsilon_phonon(self,datadir,filename):
     
     return
 
+  
+def load_Zion(self,datadir):
+
+    Zion_path = datadir + self.target+'/'+ self.target+"_Zion.dat"
+
+    if( not os.path.exists(Zion_path)):
+        print("Warning! Momentum Zion not loaded. Using Z - number of valence electrons.")
+        self.Zion_loaded=False
+    else:
+        self.Zion_loaded=True
+        
+        with open(Zion_path) as f:
+          citation = f.readline().replace("\n","")
+          print("Zion(k) for Migdal calculation taken or calculated from: "+citation)
+        
+        Ziondat = np.loadtxt(Zion_path,skiprows=1).T
+        self.Zion_k = interp1d(Ziondat[0],Ziondat[1],\
+            fill_value=(Ziondat[1][0],Ziondat[1][-1]),bounds_error=False)
+        
+    return
+  
 ############################################################################################
 
 # Electron gas dielectric function
