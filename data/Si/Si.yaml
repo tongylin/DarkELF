@@ -8,3 +8,8 @@ omegap : 16.6
 Enl_list : [1844,154,104,13.5,8.1] # Energies of Ibe et al. Migdal calculation
 # Averaged phonon energy
 ombar : 0.03 #in eV
+mermin_ref: "Y. Sun, H. Xu, B. Da, S.-f. Mao and Z.-j. Ding, Calculations of Energy-Loss Function for 26 Materials, Chinese Journal of Chemical Physics 9 (2016) 663."
+lattice_spacing: 5.47 # Angstroms
+cLAkms: 8.7 # km/s
+cTAkms: 5.1 # km/s
+LOvec: [0.060]  # eV
