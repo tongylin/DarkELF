@@ -9,9 +9,10 @@ import yaml
 
 
 class darkelf(object):
-    def __init__(self, mX = 1e5, mMed = -1, vesckms = 500, v0kms = 220, vekms = 240, delta = 0.0, q0=0.0, 
+    def __init__(self, mX = 1e5, mMed = -1, vesckms = 500, v0kms = 220, vekms = 240, delta = 0.0, q0=0.0,
         target='Ge',targetyaml='',filename="Ge_gpaw_withLFE.dat", phonon_filename="Ge_epsphonon.dat",
-        eps_data_dir = os.path.dirname(__file__)+"/../data/"):
+        eps_data_dir = os.path.dirname(__file__)+"/../data/",
+        dos_filename='GaAs_DoS.dat'):
 
         # Useful units and constants
         self.eVtoK = 11604.5221
@@ -31,27 +32,34 @@ class darkelf(object):
         self.A0tocm = 1e-8
         self.mom_autoeV=3728.95
         self.rhoX = 0.4e9  # eV/cm^3
-        
+
+        self.c0 = 2.99792458e5            # km/s
+        self.c0cms = self.c0*1e5          # cm/s
+
         # read in various material-dependent quantities
         self.target = target
         if(targetyaml == ''):
             self.targetyaml = self.target
-        else: 
+        else:
             self.targetyaml = targetyaml
         configfilename=eps_data_dir+'/'+target+'/'+self.targetyaml+'.yaml'
         if (not os.path.exists(configfilename)):
             print("Configuration file for "+target+" is absent: ", configfilename)
-        else:  
+        else:
             with open(configfilename) as file:
                 variable_list = yaml.load(file, Loader=yaml.FullLoader)
                 for k, v in variable_list.items():
-                    setattr(self, k, v)    
+                    setattr(self, k, v)
         # nucleon mass
         self.mN=self.A*self.mp
-        
+
+        # Sound speeds in units of c
+        self.cLA = self.cLAkms/self.c0
+        self.cTA = self.cTAkms/self.c0
+
         # Parameters for electron gas approximation
         self.vF = pow(3*pi*self.omegap**2/(4*(1./137)*self.me**2), 1./3)
-        self.kF = self.vF*self.me    
+        self.kF = self.vF*self.me
 
         self.NTkg = 5.9786e26/self.A  # number of targets per kg
 
@@ -59,10 +67,12 @@ class darkelf(object):
         self.update_params(mX=mX,delta=delta,setdelta=True,mMed=mMed,vesckms=vesckms,v0kms=v0kms,vekms=vekms)
 
         # Set parameters that load data files
-        self.filename = filename 
+        self.filename = filename
         self.phonon_filename = phonon_filename
         self.eps_data_dir = eps_data_dir
-        
+
+        self.dos_filename = dos_filename
+
         # Default is to use tabulated dielectric functions, assuming they are available.
         print(" .... Loading files for " + self.target)
 
@@ -72,15 +82,32 @@ class darkelf(object):
         self.load_epsilon_phonon(self.eps_data_dir,self.phonon_filename)
         # Load Atomic Migdal calculation from Ibe et al.
         self.load_Migdal_FAC(self.eps_data_dir)
-        # Load momentum dependent effective ion charge Zion(k)
-        self.load_Zion(self.eps_data_dir)
         # tabulate the shake-off probability for the Migdal calculation
         self.tabulate_I()
-        
+
+        # Load phonon density of states
+        self.load_phonon_dos(self.eps_data_dir,self.dos_filename)
+
+        # Load Fn(omega) functions
+        self.load_Fn(self.eps_data_dir,self.dos_filename)
+
+
+
     ############################################################################################
 
-    from .epsilon import load_epsilon_grid, load_epsilon_phonon, load_Zion
+    from .epsilon import load_epsilon_grid, load_epsilon_phonon
     from .epsilon import eps1_electrongas, eps1, eps2_electrongas, eps2, elf
+
+    from .dos import load_phonon_dos, load_Fn
+
+    from .multiphonon import sigma_nucleon
+    from .multiphonon import multiphononintegrand, integratedqpart, rate_integrated, rate_omega_integrated
+    from .multiphonon import impulse_rate, deltafunc, indefiniteintegratedomega, definiteintegratedomega, integrandimpulse
+    from .multiphonon import acoustic_integrand, optical_integrand, coherent_single_phonon_rate
+    from .multiphonon import definite_integrand_optical, definite_integrand_acoustic
+
+    from .fnomega import create_Fn_omega
+    from .fnomega import DoSintegrandn, vegasintegrated, structurefactornomegapart
 
     from .electron import R_electron, dRdomega_electron, dRdomegadk_electron
     from .electron import electron_yield, dRdQ_electron
@@ -90,11 +117,11 @@ class darkelf(object):
 
     from .Migdal import load_Migdal_FAC, _I, _J, _incomErf
     from .Migdal import dPdomega, dPdomegadk, dRdEn_nuclear, dRdomega_migdal, R_migdal, tabulate_I
-    
+
     from .absorption import R_absorption
-    
-    
-    ############################################################################################       
+
+
+    ############################################################################################
 
     def DM_params(self):
         """
@@ -109,10 +136,10 @@ class darkelf(object):
     # Function to update various DM model parameters
     # Initial call by class will set params to avoid 0 values! After that, update params
     #    by specifying the parameter to update
-    def update_params(self, mX = 0, delta = 0, setdelta=False, mMed = -1, 
+    def update_params(self, mX = 0, delta = 0, setdelta=False, mMed = -1,
                         vesckms = 0, v0kms = 0, vekms = 0, mediator ='',q0=0.0):
         """
-        Function to update dark matter parameters used in the class. 
+        Function to update dark matter parameters used in the class.
         If the value is set to zero or not set in the arguments, then that means no changes.
 
         Inputs
@@ -136,7 +163,7 @@ class darkelf(object):
         vekms: float
             Set vesc in units of km/s
         """
-        
+
         if(mX > 0):
             self.mX = mX
         if(setdelta or delta !=0):
@@ -162,7 +189,7 @@ class darkelf(object):
         self.muxnucleon = self.mX*self.mp/(self.mX + self.mp)
 
         self.muXe = mX*self.me/(mX + self.me)
-        
+
         # reference momentum for massless mediator, nuclear coupling
         if(q0==0.0):
           self.q0=self.mX*self.v0
@@ -175,13 +202,13 @@ class darkelf(object):
         else:
             # Default mediator mass is equal to 100*mX, for massive mediator
             self.mMed = 100*self.mX
-        
+
         # If mMed is numerically selected, then overrides the above
         if(mMed >= 0):
             self.mMed = mMed
-        
+
         return
-    
+
 
     def Fmed_nucleus(self,q):
         return (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
@@ -276,4 +303,3 @@ class darkelf(object):
                 - 2 * (omega + self.delta) * self.mX)
         else:
             return 0
-
