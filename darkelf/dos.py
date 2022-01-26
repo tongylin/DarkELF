@@ -1,7 +1,6 @@
 import numpy as np
 from numpy import linspace, sqrt, array, pi, cos, sin, dot, exp, sinh, log, log10, cosh, sinh
 from scipy.interpolate import interp1d, interp2d
-from scipy import integrate
 import sys, os, glob
 import pandas as pd
 
@@ -23,9 +22,9 @@ def load_phonon_dos(self,datadir,filename):
         self.phonon_DoS = dosdat
         self.DoS_interp = interp1d(self.phonon_DoS[0],self.phonon_DoS[1],kind='linear')
         self.dos_omega_range = [ dosdat[0][0], dosdat[0][-1] ]
-        self.omega_bar = integrate.simpson(self.phonon_DoS[1]*self.phonon_DoS[0],
+        self.omega_bar = np.trapz(self.phonon_DoS[1]*self.phonon_DoS[0],
                                     x=self.phonon_DoS[0])
-        self.omega_inverse_bar = integrate.simpson(self.phonon_DoS[1]/self.phonon_DoS[0],
+        self.omega_inverse_bar = np.trapz(self.phonon_DoS[1]/self.phonon_DoS[0],
                                     x=self.phonon_DoS[0])
     return
 

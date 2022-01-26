@@ -95,7 +95,7 @@ def integratedqpart(self, q, x, n, mediator='massive'):
 
 def rate_omega_integrated(self, mdm, v, omegathreshold, mediator='massive'):
     '''Multiphonon integrand with momentum and energy integrated out divided by sigma_nucleon'''
-    integrated = integrate.simpson(self.multiphononintegrand(mdm, v, omegathreshold, mediator),
+    integrated = np.trapz(self.multiphononintegrand(mdm, v, omegathreshold, mediator),
                             x=self.phonon_Fn[0])
     return integrated
 
@@ -108,7 +108,7 @@ def rate_integrated(self, mdm, omegathreshold, mediator='massive'):
     for i, v in enumerate(vrange):
         omega_int[i] = self.rate_omega_integrated(mdm, v, omegathreshold, mediator)
 
-    integrated = integrate.simpson(omega_int, vrange)
+    integrated = np.trapz(omega_int, vrange)
 
     return integrated
 
