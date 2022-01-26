@@ -7,3 +7,7 @@ Enl_list : [288,16.6,11.3] # Energies of Ibe et al. Migdal calculation
 E_gap : 5.47
 e0 : 13  # B. Ziaja, R. A. London, and J. Hajdu, “Unified model of secondary electron cascades in diamond,” Journal of Applied Physics 97, 064905 (2005).
 omegap : 31.
+lattice_spacing: 3.57 # Angstroms
+cLAkms: 18. # km/s
+cTAkms: 12.2 # km/s
+LOvec: [0.140]  # eV
