@@ -12,7 +12,7 @@ class darkelf(object):
     def __init__(self, mX = 1e5, mMed = -1, vesckms = 500, v0kms = 220, vekms = 240, delta = 0.0, q0=0.0,
         target='Ge',targetyaml='',filename="Ge_gpaw_withLFE.dat", phonon_filename="Ge_epsphonon.dat",
         eps_data_dir = os.path.dirname(__file__)+"/../data/",
-        dos_filename='GaAs_DoS.dat'):
+        dos_filename='GaAs_DoS.dat',form_factor_filename='Si_form_factor.dat'):
 
         # Useful units and constants
         self.eVtoK = 11604.5221
@@ -72,6 +72,7 @@ class darkelf(object):
         self.eps_data_dir = eps_data_dir
 
         self.dos_filename = dos_filename
+        self.form_factor_filename = form_factor_filename
 
         # Default is to use tabulated dielectric functions, assuming they are available.
         print(" .... Loading files for " + self.target)
@@ -91,6 +92,9 @@ class darkelf(object):
         # Load Fn(omega) functions
         self.load_Fn(self.eps_data_dir,self.dos_filename)
 
+        # Load form factor functions
+        self.load_form_factor(self.eps_data_dir,self.form_factor_filename)
+
 
 
     ############################################################################################
@@ -100,11 +104,24 @@ class darkelf(object):
 
     from .dos import load_phonon_dos, load_Fn
 
-    from .multiphonon import sigma_nucleon
-    from .multiphonon import multiphononintegrand, integratedqpart, rate_integrated, rate_omega_integrated
-    from .multiphonon import impulse_rate, deltafunc, indefiniteintegratedomega, definiteintegratedomega, integrandimpulse
-    from .multiphonon import acoustic_integrand, optical_integrand, coherent_single_phonon_rate
-    from .multiphonon import definite_integrand_optical, definite_integrand_acoustic
+    from .form_factor import load_form_factor, form_factor_func
+
+    #from .multiphonon import sigma_nucleon
+    #from .multiphonon import multiphononintegrand, integratedqpart, rate_integrated, rate_omega_integrated
+    #from .multiphonon import impulse_rate, deltafunc, indefiniteintegratedomega, definiteintegratedomega, integrandimpulse
+    #from .multiphonon import acoustic_integrand, optical_integrand, coherent_single_phonon_rate
+    #from .multiphonon import definite_integrand_optical, definite_integrand_acoustic
+    #from .multiphonon import dR_domega_dq_impulse_approx, dR_domega_impulse_approx, dR_domega_dq_coherent_single
+    #from .multiphonon import dR_domega_coherent_single, dR_domega_dq_multiphonon_expansion, dR_domega_multiphonon_expansion
+    #from .multiphonon import dR_domega_multiphonons, R_multiphonons, sigma_nucleon_check, dR_domega_multiphonons_no_single
+
+    from .multiphonon_generalized import R_multiphonons, sigma_nucleon, dR_domega_multiphonons
+    from .multiphonon_generalized import dR_domega_multiphonons_no_single
+    from .multiphonon_generalized import dR_domega_dq_multiphonon_expansion, dR_domega_multiphonon_expansion
+    from .multiphonon_generalized import dR_domega_dq_impulse_approx, dR_domega_impulse_approx, deltafunc
+    from .multiphonon_generalized import dR_domega_dq_coherent_single, dR_domega_coherent_single
+    from .multiphonon_generalized import coherent_single_phonon_rate, R_coherent_optical
+    from .multiphonon_generalized import dR_dq_coherent_optical, R_coherent_acoustic, dR_domega_coherent_acoustic
 
     from .fnomega import create_Fn_omega
     from .fnomega import DoSintegrandn, vegasintegrated, structurefactornomegapart

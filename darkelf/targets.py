@@ -31,3 +31,7 @@ def files(target,path=os.path.dirname(__file__)+"/../data/"):
     print('Available data for Fn(omega) functions: ')
     for file in glob.glob(path +str(target)+"/*Fn.dat"):
             print('\t',file.split("/")[-1])
+    print(" ")
+    print('Available data for form factors: ')
+    for file in glob.glob(path +str(target)+"/*form_factor.dat"):
+            print('\t',file.split("/")[-1])

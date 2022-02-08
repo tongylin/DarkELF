@@ -1,6 +1,7 @@
 import numpy as np
 from numpy import linspace, sqrt, array, pi, cos, sin, dot, exp, sinh, log, log10, cosh, sinh
 from scipy.interpolate import interp1d, interp2d
+from scipy import integrate
 import sys, os, glob
 import pandas as pd
 
@@ -48,5 +49,11 @@ def load_Fn(self,datadir,filename):
         phonondat = np.loadtxt(fn_path).T
         print("Loaded Fn(omega) functions corresponding to density of states in: ", filename)
         self.phonon_Fn = phonondat
+
+    if self.phonon_Fn_loaded:
+        # makes interpolations
+        self.Fn_interpolations = {}
+        for n in range(1, len(self.phonon_Fn)):
+            self.Fn_interpolations[n] = interp1d(self.phonon_Fn[0], self.phonon_Fn[n])
 
     return
