@@ -29,6 +29,9 @@ def R_multiphonons(self, mdm, omegathreshold, mediator='massive', sigman=1e-38, 
         if (1/2)*mdm*(self.vesc + self.veavg)**2 < omegathreshold:
             return 0
         omegarange = np.logspace(np.log10(omegathreshold), np.log10((1/2)*mdm*(self.vesc + self.veavg)**2), 250)
+            # integrates trapezoidally over this logspace since any sharp peaks are at small omega
+            # can make a number of points higher in case concern of very sharp optical peaks
+
         dr_domega = [self.dR_domega_multiphonons_no_single(mdm, omega, mediator=mediator, custom_form_factor=custom_form_factor) for omega in omegarange]
         return (np.trapz(dr_domega, omegarange) + prefactor*sigman*((1/self.eVcm)**2)*
                 (self.eVtoInvYr/self.eVtokg)*self.coherent_single_phonon_rate(mdm, omegathreshold, mediator=mediator, custom_form_factor=custom_form_factor))
@@ -90,7 +93,7 @@ def dR_domega_dq_multiphonon_expansion(self, mdm, q, omega, mediator='massive', 
 
     qBZ = (2*pi/self.lattice_spacing)*self.eVtoA0
 
-    if (q < qBZ) or (q > 2*sqrt(2*self.A*self.mp*self.omega_bar)):
+    if ((q < qBZ) and (omega < self.dos_omega_range[1])) or (q > 2*sqrt(2*self.A*self.mp*self.omega_bar)):
         return 0
     else:
         pass
@@ -134,7 +137,10 @@ def dR_domega_multiphonon_expansion(self, mdm, omega, mediator='massive', custom
     if vmax**2 < 2*omega/mdm:
         return 0
 
-    qmin = max(mdm*(vmax - sqrt(vmax**2 - (2*omega/mdm))), qBZ)
+    if (omega > self.dos_omega_range[1]):
+        qmin = mdm*(vmax - sqrt(vmax**2 - (2*omega/mdm)))
+    else:
+        qmin = max(mdm*(vmax - sqrt(vmax**2 - (2*omega/mdm))), qBZ)
     qmax = min(mdm*(vmax + sqrt(vmax**2 - (2*omega/mdm))), 2*sqrt(2*self.A*self.mp*self.omega_bar))
     if qmin >= qmax:
         return 0

@@ -87,6 +87,8 @@ def R_multiphonons(self, mdm, omegathreshold, mediator='massive', sigman=1e-38):
         if (1/2)*mdm*(self.vesc + self.veavg)**2 < omegathreshold:
             return 0
         omegarange = np.logspace(np.log10(omegathreshold), np.log10((1/2)*mdm*(self.vesc + self.veavg)**2), 250)
+        # integrates trapezoidally over this logspace since any sharp peaks are at small omega
+        # can make a higher number in case concern of missing peaks
         dr_domega = [self.dR_domega_multiphonons_no_single(mdm, omega, mediator) for omega in omegarange]
         return (np.trapz(dr_domega, omegarange) +
                 prefactor*sigman*((1/self.eVcm)**2)*
