@@ -115,7 +115,7 @@ class darkelf(object):
     #from .multiphonon import dR_domega_coherent_single, dR_domega_dq_multiphonon_expansion, dR_domega_multiphonon_expansion
     #from .multiphonon import dR_domega_multiphonons, R_multiphonons, sigma_nucleon_check, dR_domega_multiphonons_no_single
 
-    from .multiphonon_generalized import R_multiphonons, sigma_nucleon, dR_domega_multiphonons
+    from .multiphonon_generalized import R_multiphonons, sigma_multiphonons, dRdomega_multiphonons
     from .multiphonon_generalized import dR_domega_multiphonons_no_single
     from .multiphonon_generalized import dR_domega_dq_multiphonon_expansion, dR_domega_multiphonon_expansion
     from .multiphonon_generalized import dR_domega_dq_impulse_approx, dR_domega_impulse_approx, deltafunc

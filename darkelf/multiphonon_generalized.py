@@ -16,41 +16,58 @@ from scipy import integrate
 # These are basically the only important functions, everything else is just used to calculate these
 
 
-def R_multiphonons(self, mdm, omegathreshold, mediator='massive', sigman=1e-38, custom_form_factor=False):
+def R_multiphonons(self, mdm, threshold, mediator='massive', sigman=1e-38, custom_form_factor=False):
+    """ 
+    Returns rate for DM off harmonic lattice, including multiphonons
+
+    Inputs
+    ------
+    mdm: !TL: This should be removed as an option, since this is not how the mass is set in DarkELF overall. Note also that the reduced mass is also set in update_params. Use self.mX
+    mediator: !TL: This is also set in update_params, uses self.mMed   F(q) = ((mX v0)^2 + mMed^2)/ (q^2 + mMed^2) <-- form factor. 
+    !TL: should we set a dark photon flag?  f_j(q) = Z(q)/eps(q) (maybe rename, not form factor) OR f_j = A_j
+    threshold: float in [eV]
+    sigma_n: float
+        DM-nucleon cross section in [cm^2], defined at reference momentum of q0. 
+        DM-nucleus cross section assumed to be coherently enhanced by A^2
+
+    Outputs
+    -------
+    rate as function of En, in [1/kg/yr/eV]
+    """
     '''Full rate in events/kg/yr, dm-nucleon cross-section 1e-38 [cm^2]'''
-    if omegathreshold > (1/2)*mdm*(self.vesc + self.veavg)**2:
-        return 0
+    
     reduced_mass = mdm*self.mp/(mdm + self.mp)
     prefactor = ((1/(self.A*self.mp + self.A*self.mp))*
                 (self.rhoX*self.eVcm**3)/(2*mdm*(reduced_mass)**2))
-    if omegathreshold > (1/2)*mdm*(self.vesc + self.veavg)**2:
+
+    if threshold > (1/2)*mdm*(self.vesc + self.veavg)**2:
         return 0
     else:
-        if (1/2)*mdm*(self.vesc + self.veavg)**2 < omegathreshold:
-            return 0
-        omegarange = np.logspace(np.log10(omegathreshold), np.log10((1/2)*mdm*(self.vesc + self.veavg)**2), 250)
+        omegarange = np.logspace(np.log10(threshold), np.log10((1/2)*mdm*(self.vesc + self.veavg)**2), 250)
             # integrates trapezoidally over this logspace since any sharp peaks are at small omega
             # can make a number of points higher in case concern of very sharp optical peaks
 
         dr_domega = [self.dR_domega_multiphonons_no_single(mdm, omega, mediator=mediator, custom_form_factor=custom_form_factor) for omega in omegarange]
         return (np.trapz(dr_domega, omegarange) + prefactor*sigman*((1/self.eVcm)**2)*
-                (self.eVtoInvYr/self.eVtokg)*self.coherent_single_phonon_rate(mdm, omegathreshold, mediator=mediator, custom_form_factor=custom_form_factor))
+                (self.eVtoInvYr/self.eVtokg)*self.coherent_single_phonon_rate(mdm, threshold, mediator=mediator, custom_form_factor=custom_form_factor))
 
 
-def sigma_nucleon(self, mdm, omegathreshold, mediator='massive', custom_form_factor=False):
-    '''DM-nucleon cross-section [cm^2] corresponding to 3 events/kg/yr '''
-    rate = self.R_multiphonons(mdm, omegathreshold, mediator=mediator, custom_form_factor=custom_form_factor)
+def sigma_multiphonons(self, mdm, threshold, mediator='massive', custom_form_factor=False):
+    '''DM-proton cross-section [cm^2] corresponding to 3 events/kg/yr '''
+    rate = self.R_multiphonons(mdm, threshold, mediator=mediator, custom_form_factor=custom_form_factor)
     if rate != 0:
-        return (3*1e-38)/self.R_multiphonons(mdm, omegathreshold, mediator=mediator, custom_form_factor=custom_form_factor)
+        return (3*1e-38)/self.R_multiphonons(mdm, threshold, mediator=mediator, custom_form_factor=custom_form_factor)
     else:
         return float('inf')
 
-def dR_domega_multiphonons(self, mdm, omega, mediator='massive', sigman=1e-38, custom_form_factor=False):
+
+def dRdomega_multiphonons(self, mdm, omega, mediator='massive', sigman=1e-38, custom_form_factor=False):
     """
     Returns dR_domega in events/kg/yr/eV
 
     Inputs
     ------
+    mdm: !TL: This should be removed as an option, since this is not how the mass is set in DarkELF overall. Note also that the reduced mass is also set in update_params.
     mdm: float
         dark matter mass in [eV]
     form_factor: loaded in or choose 'massive' or 'massless'
@@ -91,6 +108,8 @@ def dR_domega_multiphonons_no_single(self, mdm, omega, mediator='massive', sigma
 
 def dR_domega_dq_multiphonon_expansion(self, mdm, q, omega, mediator='massive', custom_form_factor=False):
 
+
+    # !TL: it is defined repeatedly, simpler to define this once in __init__ 
     qBZ = (2*pi/self.lattice_spacing)*self.eVtoA0
 
     if ((q < qBZ) and (omega < self.dos_omega_range[1])) or (q > 2*sqrt(2*self.A*self.mp*self.omega_bar)):
@@ -152,6 +171,12 @@ def dR_domega_multiphonon_expansion(self, mdm, omega, mediator='massive', custom
 #
 # Impulse approximation term
 
+# !TL: Is it possible to just combine this with  dR_domega_dq_multiphonon_expansion into one function?
+#      Similarly, we can integrate that to combine:
+#       dR_domega_multiphonon_expansion
+#       dR_domega_impulse_approx
+#       dR_domega_multiphonons_no_single
+#     could this all be one function?
 def dR_domega_dq_impulse_approx(self, mdm, q, omega, mediator='massive', custom_form_factor=False):
     if q < 2*sqrt(2*self.A*self.mp*self.omega_bar):
         return 0
@@ -162,6 +187,7 @@ def dR_domega_dq_impulse_approx(self, mdm, q, omega, mediator='massive', custom_
         if self.form_factor_loaded:
             formfactorsquared = self.form_factor_func(q)**2
         else:
+            # !TL: is this actually the same? Seems to be missing factor of A.
             # print('Form factor not loaded, load with form_factor_filename, defaulted to massive mediator')
             formfactorsquared = 1
     else:
@@ -200,6 +226,7 @@ def deltafunc(self, q):
 #
 # Single phonon coherent term
 
+# !TL: can this be merged in dR_domega_coherent_single? 
 def dR_domega_dq_coherent_single(self, mdm, q, omega, mediator='massive', custom_form_factor=False):
     '''no acoustic here, since it's a delta in q, omega'''
     qBZ = (2*pi/self.lattice_spacing)*self.eVtoA0
@@ -282,6 +309,7 @@ def dR_domega_coherent_single(self, mdm, omega, mediator='massive', custom_form_
     return integrate.quad(lambda q: self.dR_domega_dq_coherent_single(mdm, q, omega, mediator=mediator, custom_form_factor=custom_form_factor),
                     mdm*(vmax - sqrt(vmax**2 - (2*omega/mdm))), mdm*(vmax + sqrt(vmax**2 - (2*omega/mdm))))[0] + acoustic_part*prefactor
 
+# !TL: Maybe this function can also be merged into dRdomega_coherent_single? Maybe this func is not even needed.
 def dR_domega_coherent_acoustic(self, mdm, omega, mediator='massive', custom_form_factor=False):
 
     # following stuff is doing the acoustic part analytically
@@ -336,6 +364,8 @@ def R_coherent_acoustic(self, mdm, omegathreshold, mediator='massive', custom_fo
     return integrate.quad(lambda omega: self.dR_domega_coherent_acoustic(mdm, omega, mediator=mediator, custom_form_factor=custom_form_factor),
                         omegamin, omegamax)[0]
 
+
+# !TL: Is this function needed? Can be combined with R_coherent_optical, right?
 def dR_dq_coherent_optical(self, mdm, q, mediator='massive', custom_form_factor=False):
 
     # following stuff is doing the acoustic part analytically
@@ -385,8 +415,8 @@ def dR_dq_coherent_optical(self, mdm, q, mediator='massive', custom_form_factor=
 
     return prefactor*optical_part*etav(q/(2*mdm) + self.LOvec[0]/q)*debye_waller*formfactorsquared
 
-def R_coherent_optical(self, mdm, omegathreshold, mediator='massive', custom_form_factor=False):
-    if omegathreshold < self.LOvec[0]:
+def R_coherent_optical(self, mdm, threshold, mediator='massive', custom_form_factor=False):
+    if threshold < self.LOvec[0]:
         pass
     else:
         return 0
@@ -405,6 +435,6 @@ def R_coherent_optical(self, mdm, omegathreshold, mediator='massive', custom_for
     return integrate.quad(lambda q: self.dR_dq_coherent_optical(mdm, q, mediator=mediator, custom_form_factor=custom_form_factor),
                         qmin, qmax)[0]
 
-def coherent_single_phonon_rate(self, mdm, omegathreshold, mediator='massive', custom_form_factor=False):
-    return (self.R_coherent_optical(mdm, omegathreshold, mediator=mediator, custom_form_factor=custom_form_factor) +
-            self.R_coherent_acoustic(mdm, omegathreshold, mediator=mediator, custom_form_factor=custom_form_factor))
+def coherent_single_phonon_rate(self, mdm, threshold, mediator='massive', custom_form_factor=False):
+    return (self.R_coherent_optical(mdm, threshold, mediator=mediator, custom_form_factor=custom_form_factor) +
+            self.R_coherent_acoustic(mdm, threshold, mediator=mediator, custom_form_factor=custom_form_factor))
