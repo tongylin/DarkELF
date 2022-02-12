@@ -117,11 +117,15 @@ def dR_domega_dq_multiphonon_expansion(self, mdm, q, omega, mediator='massive', 
     else:
         pass
 
+    # !TL: if dark_photon ( fd_darkphoton(q) )
+    #         else  ( Ad )
+    #  * mediator form factor -- maybe just use the default one, and later in plotting e.g. reach in sigma_p a user can always change normalization
     if custom_form_factor:
         if self.form_factor_loaded:
             formfactorsquared = self.form_factor_func(q)**2
         else:
             # print('Form factor not loaded, load with form_factor_filename, defaulted to massive mediator')
+            # !TL maybe default to zero to indicate to user something is wrong
             formfactorsquared = 1
     else:
         if mediator == 'massive':
@@ -143,6 +147,7 @@ def dR_domega_dq_multiphonon_expansion(self, mdm, q, omega, mediator='massive', 
             qpart = q**(2*n + 1)
         else:
             qpart = q**(2*n + 1)*exp(-x*q**2)
+        # !TL: instead of doing this, you can use the fill_value option in interp1d
         if (omega > self.phonon_Fn[0][-1]) or (omega < self.phonon_Fn[0][0]):
             return 0
         else:

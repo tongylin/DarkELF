@@ -9,6 +9,8 @@ import pandas as pd
 
 # Function to load form factor
 
+#!TL: move to multiphonon.py? fd_darkphoton and load_fd_darkphoton
+
 def load_form_factor(self,datadir,filename):
 
     form_factor_path = datadir + self.target+'/'+ filename
