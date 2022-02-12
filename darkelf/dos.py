@@ -21,7 +21,7 @@ def load_phonon_dos(self,datadir,filename):
         dosdat = np.loadtxt(dos_path).T
         print("Loaded " + filename + " for density of states")
         self.phonon_DoS = dosdat
-        self.DoS_interp = interp1d(self.phonon_DoS[0],self.phonon_DoS[1],kind='linear')
+        self.DoS_interp = interp1d(self.phonon_DoS[0],self.phonon_DoS[1],kind='linear', fill_value = 0)
         self.dos_omega_range = [ dosdat[0][0], dosdat[0][-1] ]
         self.omega_bar = np.trapz(self.phonon_DoS[1]*self.phonon_DoS[0],
                                     x=self.phonon_DoS[0])

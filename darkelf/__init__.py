@@ -102,7 +102,10 @@ class darkelf(object):
     from .epsilon import load_epsilon_grid, load_epsilon_phonon
     from .epsilon import eps1_electrongas, eps1, eps2_electrongas, eps2, elf
 
-    from .dos import load_phonon_dos, load_Fn
+    from .fnomega import Fn_integrand, Fn_vegas, load_phonon_dos, load_Fn
+    from .fnomega import create_Fn_omega
+
+    #from .dos import load_phonon_dos, load_Fn
 
     from .form_factor import load_form_factor, form_factor_func
 
@@ -122,9 +125,6 @@ class darkelf(object):
     from .multiphonon_generalized import dR_domega_dq_coherent_single, dR_domega_coherent_single
     from .multiphonon_generalized import coherent_single_phonon_rate, R_coherent_optical
     from .multiphonon_generalized import dR_dq_coherent_optical, R_coherent_acoustic, dR_domega_coherent_acoustic
-
-    from .fnomega import create_Fn_omega
-    from .fnomega import DoSintegrandn, vegasintegrated, structurefactornomegapart
 
     from .electron import R_electron, dRdomega_electron, dRdomegadk_electron
     from .electron import electron_yield, dRdQ_electron
