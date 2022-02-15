@@ -142,6 +142,7 @@ def load_phonon_dos(self,datadir,filename):
                                     x=self.phonon_DoS[0])
         self.omega_inverse_bar = np.trapz(self.phonon_DoS[1]/self.phonon_DoS[0],
                                     x=self.phonon_DoS[0])
+        # !TL: rename to qchar, q_multiphonon
         self.one_over_q2_char = (1/(2*self.mp*self.A))*self.omega_inverse_bar
     return
 

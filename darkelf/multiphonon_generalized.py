@@ -22,13 +22,11 @@ def R_multiphonons(self, threshold, sigman=1e-38, dark_photon=False):
 
     Inputs
     ------
-    self.mX: !TL: This should be removed as an option, since this is not how the mass is set in DarkELF overall. Note also that the reduced mass is also set in update_params. Use self.mX
-    mediator: !TL: This is also set in update_params, uses self.mMed   F(q) = ((mX v0)^2 + mMed^2)/ (q^2 + mMed^2) <-- form factor.
-    !TL: should we set a dark photon flag?  f_j(q) = Z(q)/eps(q) (maybe rename, not form factor) OR f_j = A_j
     threshold: float in [eV]
     sigma_n: float
         DM-nucleon cross section in [cm^2], defined at reference momentum of q0.
-        DM-nucleus cross section assumed to be coherently enhanced by A^2
+        DM-nucleus cross section assumed to be coherently enhanced by A^2 by default (if dark photon flag not set)
+    dark_photon: Bool to set f_d(q) = Z_d(q) atomic charges
 
     Outputs
     -------
@@ -43,10 +41,12 @@ def R_multiphonons(self, threshold, sigman=1e-38, dark_photon=False):
         return 0
     else:
 
+        # !TL Can replace with R_multiphonons_no_single
+
         omegarange = np.logspace(np.log10(threshold), np.log10((1/2)*self.mX*(self.vmax**2)), 500)
         # Sometimes the number of points matters, increase if noise, decrease if too slow
 
-        dr_domega = [self.dR_domega_multiphonons_no_single(omega, dark_photon=dark_photon) for omega in omegarange]
+        dr_domega = [self.dR_domega_multiphonons_no_single(omega, sigman=sigman, dark_photon=dark_photon) for omega in omegarange]
 
         return (np.trapz(dr_domega, omegarange) + self.R_single_phonon(threshold, sigman=sigman, dark_photon=dark_photon))
 
@@ -60,29 +60,32 @@ def sigma_multiphonons(self, threshold, dark_photon=False):
         return float('inf')
 
 
+# !TL: Simplify this function and include it as internal function _dRdomega_multiphonons
 def dRdomega_multiphonons(self, omega, sigman=1e-38, dark_photon=False):
     """
-    Returns dR_domega in events/kg/yr/eV
+    Returns dR_domega in events/kg/yr/eV, this should be used for plotting ONLY since it includes single phonon as a narrow gaussian
+    Note: don't integrate over this for the total rate, since the single-phonon coherent rate is modeled by a very sharp gaussian
 
     Inputs
     ------
-    self.mX: !TL: This should be removed as an option, since this is not how the mass is set in DarkELF overall. Note also that the reduced mass is also set in update_params.
-    self.mX: float
-        dark matter mass in [eV]
-    form_factor: loaded in or choose 'massive' or 'massless'
-         default is 'massive'
+    omega: float in [eV]
+    sigma_n: float
+        DM-nucleon cross section in [cm^2], defined at reference momentum of q0.
+        DM-nucleus cross section assumed to be coherently enhanced by A^2 by default (if dark photon flag not set)
+    dark_photon: Bool to set f_d(q) = Z_d(q) atomic charges
+
     Output
     ------
     dR_domega in events/kg/yr/eV
-    ------
-    Note: don't integrate over this, since the single-phonon coherent rate
-    is modeled by a very sharp gaussian
     """
+    #!TL: The prefactors can be included all inside the separate dRdomegas, and this function can be just simplified to be basically
+    #       dR_domega_multiphonons_no_single + _dR_domega_coherent_single
+    #!TL: Can also define some internal prefactor function with all prefactors/units, _R_multiphonons_prefactor
     prefactor = sigman*((1/(self.A*self.mp + self.A*self.mp))*
                 (self.rhoX*self.eVcm**3)/(2*self.mX*(self.muxnucleon)**2))
-    total_dR_domega = prefactor*(self.dR_domega_multiphonon_expansion(omega, dark_photon=dark_photon)
-                + self.dR_domega_impulse_approx(omega, dark_photon=dark_photon)
-                + self.dR_domega_coherent_single(omega, dark_photon=dark_photon))
+    total_dR_domega = prefactor*(self.dR_domega_multiphonon_expansion(omega, sigman=sigman, dark_photon=dark_photon)
+                + self.dR_domega_impulse_approx(omega, sigman=sigman, dark_photon=dark_photon)
+                + self.dR_domega_coherent_single(omega, sigman=sigman, dark_photon=dark_photon))
     return ((1/self.eVcm)**2)*(self.eVtoInvYr/self.eVtokg)*total_dR_domega
 
 def dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=False):
@@ -90,14 +93,15 @@ def dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=Fals
     # (useful just for intermediate calcs since single-ph coherent integrated analytically)
     prefactor = sigman*((1/(self.A*self.mp + self.A*self.mp))*
                 (self.rhoX*self.eVcm**3)/(2*self.mX*(self.muxnucleon)**2))
-    total_dR_domega = prefactor*(self.dR_domega_multiphonon_expansion(omega, dark_photon=dark_photon)
-                + self.dR_domega_impulse_approx(omega, dark_photon=dark_photon))
+    total_dR_domega = prefactor*(self.dR_domega_multiphonon_expansion(omega, sigman=sigman, dark_photon=dark_photon)
+                + self.dR_domega_impulse_approx(omega, sigman=sigman, dark_photon=dark_photon))
     return ((1/self.eVcm)**2)*(self.eVtoInvYr/self.eVtokg)*total_dR_domega
 
 
 def R_multiphonons_no_single(self, threshold, sigman=1e-38, dark_photon=False):
     '''Full rate in events/kg/yr, dm-nucleon cross-section 1e-38 [cm^2]'''
 
+    # !TL: prefactor not used here
     prefactor = ((1/(self.A*self.mp + self.A*self.mp))*
                 (self.rhoX*self.eVcm**3)/(2*self.mX*(self.muxnucleon)**2))
     if threshold > (1/2)*self.mX*(self.vmax)**2:
@@ -108,7 +112,7 @@ def R_multiphonons_no_single(self, threshold, sigman=1e-38, dark_photon=False):
             # can make a number of points higher in case concern of very sharp optical peaks
             # !EV need to check this again, some small amount of numerical noise comes from this choice of range
 
-        dr_domega = [self.dR_domega_multiphonons_no_single(omega, dark_photon=dark_photon) for omega in omegarange]
+        dr_domega = [self.dR_domega_multiphonons_no_single(omega, sigman=sigman, dark_photon=dark_photon) for omega in omegarange]
         return np.trapz(dr_domega, omegarange)
 
 ###############################################################################################
@@ -122,6 +126,7 @@ def load_fd_darkphoton(self,datadir,filename):
     fd_path = datadir + self.target+'/'+ filename
 
     if( not os.path.exists(fd_path)):
+        # !TL: warning/text out of date
         print("Warning! Form factor not loaded. Need to set form_factor_filename if needed. Otherwise defaults to massive mediator ")
         self.fd_loaded=False
     else:
@@ -146,27 +151,26 @@ def load_fd_darkphoton(self,datadir,filename):
 def dR_domega_dq_multiphonon_expansion(self, q, omega, dark_photon=False):
 
 
-    # !TL: it is defined repeatedly, simpler to define this once in __init__
-
     if ((q < self.qBZ) and (omega < self.dos_omega_range[1])) or (q > 2*sqrt(2*self.A*self.mp*self.omega_bar)):
         return 0
     else:
         pass
 
     if dark_photon:
-        fd = self.fd_darkphoton(q)
+        if self.fd_loaded:
+            fd = self.fd_darkphoton(q)
+        else:
+            fd = 0
     else:
         fd = self.A
 
-    # !TL: if dark_photon ( fd_darkphoton(q) )
-    #         else  ( Ad )
-    #  * mediator form factor -- maybe just use the default one, and later in plotting e.g. reach in sigma_p a user can always change normalization
-
+    #!TL: replace with Fmed_nucleus ?
     formfactorsquared = self.form_factor(q)**2
 
     otherpart = 0
 
     for n in range(1, len(self.phonon_Fn)):
+        # Debye-Waller factor set to 1 when q^2 small relative to characteristic q, for numerical convenience
         if self.one_over_q2_char*q**2 < 0.03:
             qpart = q**(2*n + 1)
         else:
@@ -176,7 +180,9 @@ def dR_domega_dq_multiphonon_expansion(self, q, omega, dark_photon=False):
 
     return (fd**2 + fd**2)*formfactorsquared*otherpart*self.etav((q/(2*self.mX)) + omega/q)
 
-def dR_domega_multiphonon_expansion(self, omega, dark_photon=False):
+
+# !TL: move the sigman/etc prefactors into the individual dR functions.
+def dR_domega_multiphonon_expansion(self, omega, sigman=sigman, dark_photon=False):
 
     if self.vmax**2 < 2*omega/self.mX:
         return 0
@@ -185,26 +191,31 @@ def dR_domega_multiphonon_expansion(self, omega, dark_photon=False):
         qmin = self.mX*(self.vmax - sqrt(self.vmax**2 - (2*omega/self.mX)))
     else:
         qmin = max(self.mX*(self.vmax - sqrt(self.vmax**2 - (2*omega/self.mX))), self.qBZ)
+
     qmax = min(self.mX*(self.vmax + sqrt(self.vmax**2 - (2*omega/self.mX))), 2*sqrt(2*self.A*self.mp*self.omega_bar))
+
     if qmin >= qmax:
         return 0
+    
     qrange = np.linspace(qmin, qmax, 100)
+    
     dR_domega_dq = [self.dR_domega_dq_multiphonon_expansion(q, omega, dark_photon=dark_photon) for q in qrange]
+    
     return np.trapz(dR_domega_dq, qrange)
 
 # Need check numerics for multiphonons at q < self.qBZ, I have it currently set to integrate over omega > end of interpolation range
 # (rather than omega_LO), should maybe change to omega_LO or cLA*self.qBZ
 # a bit noisy in small omega..
+# TL: This seems OK to me.
 
 ############################################################################################
 #
 # Impulse approximation term
 
 # !TL: Is it possible to just combine this with  dR_domega_dq_multiphonon_expansion into one function?
-#      Similarly, we can integrate that to combine:
-#       dR_domega_multiphonon_expansion
-#       dR_domega_impulse_approx
-#       dR_domega_multiphonons_no_single
+#      Similarly, we can integrate that to combine into dR_domega_multiphonons_no_single
+#       dR_domega_multiphonon_expansion -> not needed?
+#       dR_domega_impulse_approx -> not needed?
 #     could this all be one function?
 def dR_domega_dq_impulse_approx(self, q, omega, dark_photon=False):
     if q < 2*sqrt(2*self.A*self.mp*self.omega_bar):
@@ -214,8 +225,6 @@ def dR_domega_dq_impulse_approx(self, q, omega, dark_photon=False):
         if self.fd_loaded:
             fd = self.fd_darkphoton(q)
         else:
-            # !TL: is this actually the same? Seems to be missing factor of A.
-            # print('Form factor not loaded, load with form_factor_filename, defaulted to massive mediator')
             fd = 0
     else:
         fd = self.A
@@ -245,6 +254,10 @@ def dR_domega_impulse_approx(self, omega, dark_photon=False):
 ############################################################################################
 #
 # Single phonon coherent term
+
+# !TL: functions wanted:  
+#      _dR_domega_coherent_single -- internal function used for plotting
+#      R_coherent_single_phonon -- total rate, obtained analytically
 
 # !TL: can this be merged in dR_domega_coherent_single?
 def dR_domega_dq_coherent_single(self, q, omega, dark_photon=False):
@@ -354,6 +367,7 @@ def R_single_phonon(self, threshold, sigman=1e-38, dark_photon=False):
             optical_factor1 = ((self.lattice_spacing/self.eVtoA0)**2/(32*self.LOvec[0]*self.mp))
             optical_factor2 = 1/(2*(self.A + self.A))
 
+            #!TL: could be vectorized rather than loop?
             for i, q in enumerate(qrange):
 
                 formfactorsquared = self.form_factor(q)**2
@@ -367,6 +381,7 @@ def R_single_phonon(self, threshold, sigman=1e-38, dark_photon=False):
                 else:
                     fd = self.A
 
+                #!TL define some debye-waller function?
                 if self.one_over_q2_char*q**2 < 0.03:
                     debye_waller = 1
                 else:
