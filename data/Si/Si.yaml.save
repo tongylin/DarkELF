@@ -1,0 +1,15 @@
+
+\
+
+
+c
+rhoT : 2.33  # gram/cm^3
+alattice : 5.43 # Angstrom
+A : 28.
+Zion : 4.
+E_gap : 1.11
+e0 : 3.6 #for electron yield, epsilon in (5.2) of 1509.01598
+omegap : 16.6
+Enl_list : [1844,154,104,13.5,8.1] # Energies of Ibe et al. Migdal calculation
+# Averaged phonon energy
+ombar : 0.03 #in eV
