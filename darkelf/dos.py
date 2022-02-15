@@ -54,6 +54,6 @@ def load_Fn(self,datadir,filename):
         # makes interpolations
         self.Fn_interpolations = {}
         for n in range(1, len(self.phonon_Fn)):
-            self.Fn_interpolations[n] = interp1d(self.phonon_Fn[0], self.phonon_Fn[n])
+            self.Fn_interpolations[n] = interp1d(self.phonon_Fn[0], self.phonon_Fn[n], fill_value=0)
 
     return

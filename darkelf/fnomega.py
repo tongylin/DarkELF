@@ -20,7 +20,7 @@ def create_Fn_omega(self, datadir=None, dos_filename=None, npoints=250):
 
     Default makes the Fn files for 10 phonons with the density of states
         loaded at class instantiation, then loads in new Fn.
-    
+
     Inputs
     ------
     datadir: string
@@ -99,7 +99,7 @@ def Fn_vegas(self, omega, n):
     minimum = np.floor(omega/self.phonon_DoS[0][-1]) + 1
     if n < minimum:
         return 0
-    
+
     # Compute integral if n > 1
     if (n > 1) and (isinstance(n, int)):
         integrationrange = (n - 1)*[[self.phonon_DoS[0][0],self.phonon_DoS[0][-1]]]
@@ -136,12 +136,13 @@ def load_phonon_dos(self,datadir,filename):
         dosdat = np.loadtxt(dos_path).T
         print("Loaded " + filename + " for density of states")
         self.phonon_DoS = dosdat
-        self.DoS_interp = interp1d(self.phonon_DoS[0],self.phonon_DoS[1],kind='linear', fill_value = 0)
+        self.DoS_interp = interp1d(self.phonon_DoS[0],self.phonon_DoS[1],kind='linear', fill_value = 0, bounds_error=False)
         self.dos_omega_range = [ dosdat[0][0], dosdat[0][-1] ]
         self.omega_bar = np.trapz(self.phonon_DoS[1]*self.phonon_DoS[0],
                                     x=self.phonon_DoS[0])
         self.omega_inverse_bar = np.trapz(self.phonon_DoS[1]/self.phonon_DoS[0],
                                     x=self.phonon_DoS[0])
+        self.one_over_q2_char = (1/(2*self.mp*self.A))*self.omega_inverse_bar
     return
 
 # Function to load Fn(omega) data corresponding to density of states file
@@ -169,6 +170,6 @@ def load_Fn(self,datadir,filename):
         # makes interpolations
         self.Fn_interpolations = {}
         for n in range(1, len(self.phonon_Fn)):
-            self.Fn_interpolations[n] = interp1d(self.phonon_Fn[0], self.phonon_Fn[n])
+            self.Fn_interpolations[n] = interp1d(self.phonon_Fn[0], self.phonon_Fn[n], fill_value = 0, bounds_error=False)
 
     return

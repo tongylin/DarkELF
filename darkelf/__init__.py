@@ -57,6 +57,9 @@ class darkelf(object):
         self.cLA = self.cLAkms/self.c0
         self.cTA = self.cTAkms/self.c0
 
+        # Brillouin zone in eV (isotropic approximation)
+        self.qBZ = (2*pi/self.lattice_spacing)*self.eVtoA0
+
         # Parameters for electron gas approximation
         self.vF = pow(3*pi*self.omegap**2/(4*(1./137)*self.me**2), 1./3)
         self.kF = self.vF*self.me
@@ -89,11 +92,13 @@ class darkelf(object):
         # Load phonon density of states
         self.load_phonon_dos(self.eps_data_dir,self.dos_filename)
 
+        self.qchar = sqrt(2*self.A*self.mp*self.omega_bar)
+
         # Load Fn(omega) functions
         self.load_Fn(self.eps_data_dir,self.dos_filename)
 
         # Load form factor functions
-        self.load_form_factor(self.eps_data_dir,self.form_factor_filename)
+        self.load_fd_darkphoton(self.eps_data_dir,self.form_factor_filename)
 
 
 
@@ -107,8 +112,6 @@ class darkelf(object):
 
     #from .dos import load_phonon_dos, load_Fn
 
-    from .form_factor import load_form_factor, form_factor_func
-
     #from .multiphonon import sigma_nucleon
     #from .multiphonon import multiphononintegrand, integratedqpart, rate_integrated, rate_omega_integrated
     #from .multiphonon import impulse_rate, deltafunc, indefiniteintegratedomega, definiteintegratedomega, integrandimpulse
@@ -121,10 +124,9 @@ class darkelf(object):
     from .multiphonon_generalized import R_multiphonons, sigma_multiphonons, dRdomega_multiphonons
     from .multiphonon_generalized import dR_domega_multiphonons_no_single
     from .multiphonon_generalized import dR_domega_dq_multiphonon_expansion, dR_domega_multiphonon_expansion
-    from .multiphonon_generalized import dR_domega_dq_impulse_approx, dR_domega_impulse_approx, deltafunc
+    from .multiphonon_generalized import dR_domega_dq_impulse_approx, dR_domega_impulse_approx
     from .multiphonon_generalized import dR_domega_dq_coherent_single, dR_domega_coherent_single
-    from .multiphonon_generalized import coherent_single_phonon_rate, R_coherent_optical
-    from .multiphonon_generalized import dR_dq_coherent_optical, R_coherent_acoustic, dR_domega_coherent_acoustic
+    from .multiphonon_generalized import R_single_phonon, load_fd_darkphoton, R_multiphonons_no_single
 
     from .electron import R_electron, dRdomega_electron, dRdomegadk_electron
     from .electron import electron_yield, dRdQ_electron
@@ -196,6 +198,8 @@ class darkelf(object):
             self.vesc = vesckms/self.c0 # km/s
         if(vekms > 0):
             self.veavg = vekms/self.c0   # km/s
+
+        self.vmax = self.vesc+ self.veavg
 
         self.zz = self.vesc/self.v0
         zz = self.zz
@@ -320,3 +324,6 @@ class darkelf(object):
                 - 2 * (omega + self.delta) * self.mX)
         else:
             return 0
+
+    def form_factor(self, q):
+        return ((self.mX*self.v0)**2 + self.mMed**2)/(q**2 + self.mMed**2)
