@@ -14,18 +14,21 @@ def files(target,path=os.path.dirname(__file__)+"/../data/"):
 
     target: string
     """
-
     print('Available configuration files: ')
     for file in glob.glob(path +str(target)+"/*yaml"):
             print('\t',file.split("/")[-1])
     print(" ")
     print('Available data for epsilon: ')
     for file in glob.glob(path +str(target)+"/*dat"):
-        if ('DoS' not in file) and ('Fn' not in file):
+        if ('DoS' not in file) and ('pDoS' not in file) and ('Fn' not in file):
             print('\t',file.split("/")[-1])
     print(" ")
     print('Available data for phonon density of states: ')
     for file in glob.glob(path +str(target)+"/*DoS.dat"):
+            print('\t',file.split("/")[-1])
+    print(" ")
+    print('Available data for phonon partial density of states: ')
+    for file in glob.glob(path +str(target)+"/*pDoS.dat"):
             print('\t',file.split("/")[-1])
     print(" ")
     print('Available data for Fn(omega) functions: ')

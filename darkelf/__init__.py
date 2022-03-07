@@ -12,7 +12,7 @@ class darkelf(object):
     def __init__(self, mX = 1e5, mMed = -1, vesckms = 500, v0kms = 220, vekms = 240, delta = 0.0, q0=0.0,
         target='Ge',targetyaml='',filename="Ge_gpaw_withLFE.dat", phonon_filename="Ge_epsphonon.dat",
         eps_data_dir = os.path.dirname(__file__)+"/../data/",
-        dos_filename='GaAs_DoS.dat',form_factor_filename='Si_form_factor.dat'):
+        dos_filename='GaAs_DoS.dat',fd_filename='Si_fd_darkphoton.dat'):
 
         # Useful units and constants
         self.eVtoK = 11604.5221
@@ -50,6 +50,10 @@ class darkelf(object):
                 variable_list = yaml.load(file, Loader=yaml.FullLoader)
                 for k, v in variable_list.items():
                     setattr(self, k, v)
+
+        self.Avec = np.array(self.Avec)
+        
+
         # nucleon mass
         self.mN=self.A*self.mp
 
@@ -75,7 +79,7 @@ class darkelf(object):
         self.eps_data_dir = eps_data_dir
 
         self.dos_filename = dos_filename
-        self.form_factor_filename = form_factor_filename
+        self.fd_filename = fd_filename
 
         # Default is to use tabulated dielectric functions, assuming they are available.
         print(" .... Loading files for " + self.target)
@@ -92,13 +96,20 @@ class darkelf(object):
         # Load phonon density of states
         self.load_phonon_dos(self.eps_data_dir,self.dos_filename)
 
-        self.qchar = sqrt(2*self.A*self.mp*self.omega_bar)
+        # Characteristic momenta where many phonons become important (take maximum if two distinct atoms)
+        if self.n_atoms == 1:
+            self.qchar = sqrt(2*self.A*self.mp*self.omega_bar)
+        elif self.n_atoms == 2:
+            self.qchar = max([2*self.Avec[i]*self.mp*self.omega_bar[i] for i in [0, 1]])
+        else:
+            print('Check number of atoms in yaml file')
+
 
         # Load Fn(omega) functions
         self.load_Fn(self.eps_data_dir,self.dos_filename)
 
         # Load form factor functions
-        self.load_fd_darkphoton(self.eps_data_dir,self.form_factor_filename)
+        self.load_fd_darkphoton(self.eps_data_dir,self.fd_filename)
 
 
 
@@ -110,23 +121,9 @@ class darkelf(object):
     from .fnomega import Fn_integrand, Fn_vegas, load_phonon_dos, load_Fn
     from .fnomega import create_Fn_omega
 
-    #from .dos import load_phonon_dos, load_Fn
-
-    #from .multiphonon import sigma_nucleon
-    #from .multiphonon import multiphononintegrand, integratedqpart, rate_integrated, rate_omega_integrated
-    #from .multiphonon import impulse_rate, deltafunc, indefiniteintegratedomega, definiteintegratedomega, integrandimpulse
-    #from .multiphonon import acoustic_integrand, optical_integrand, coherent_single_phonon_rate
-    #from .multiphonon import definite_integrand_optical, definite_integrand_acoustic
-    #from .multiphonon import dR_domega_dq_impulse_approx, dR_domega_impulse_approx, dR_domega_dq_coherent_single
-    #from .multiphonon import dR_domega_coherent_single, dR_domega_dq_multiphonon_expansion, dR_domega_multiphonon_expansion
-    #from .multiphonon import dR_domega_multiphonons, R_multiphonons, sigma_nucleon_check, dR_domega_multiphonons_no_single
-
-    from .multiphonon_generalized import R_multiphonons, sigma_multiphonons, dRdomega_multiphonons
-    from .multiphonon_generalized import dR_domega_multiphonons_no_single
-    from .multiphonon_generalized import dR_domega_dq_multiphonon_expansion, dR_domega_multiphonon_expansion
-    from .multiphonon_generalized import dR_domega_dq_impulse_approx, dR_domega_impulse_approx
-    from .multiphonon_generalized import dR_domega_dq_coherent_single, dR_domega_coherent_single
-    from .multiphonon_generalized import R_single_phonon, load_fd_darkphoton, R_multiphonons_no_single
+    from .multiphonon_generalized import sigma_multiphonons, R_multiphonons_no_single, R_single_phonon
+    from .multiphonon_generalized import _dR_domega_multiphonons_no_single, _dR_domega_coherent_single
+    from .multiphonon_generalized import load_fd_darkphoton
 
     from .electron import R_electron, dRdomega_electron, dRdomegadk_electron
     from .electron import electron_yield, dRdQ_electron
@@ -325,5 +322,48 @@ class darkelf(object):
         else:
             return 0
 
-    def form_factor(self, q):
-        return ((self.mX*self.v0)**2 + self.mMed**2)/(q**2 + self.mMed**2)
+    ### Useful functions for multiphonon calculations
+
+    def _debye_waller_scalar(self, q):
+        # Debye-Waller factor set to 1 when q^2 small relative to characteristic q, for numerical convenience
+
+        if self.n_atoms == 1:
+
+            one_over_q2_char = self.omega_inverse_bar/(2*self.A*self.mp)
+
+            if (one_over_q2_char*q**2 < 0.03):
+                return 1
+            else:
+                return exp(-one_over_q2_char*q**2)
+
+        else:
+
+            one_over_q2_char = self.omega_inverse_bar/(2*self.Avec*self.mp)
+
+
+            return np.where(np.less(one_over_q2_char*q**2, 0.03), 1, exp(-one_over_q2_char*q**2))
+
+
+    def debye_waller(self, q):
+        '''Debye Waller factor
+        Inputs
+        ------
+        q: float or array in units of eV'''
+        if (isinstance(q,(np.ndarray,list)) ):
+            return np.array([self._debye_waller_scalar(qi) for qi in q])
+        elif(isinstance(q,float)):
+            return self._debye_waller_scalar(q)
+        else:
+            print("Warning! debye_waller function given invalid quantity ")
+            return 0.0
+
+    def _R_multiphonons_prefactor(self, sigman):
+        # Input sigman in cm^2 output rate pre-factor in cm^2
+        if self.n_atoms == 2:
+            return sigman*((1/(self.Avec[0]*self.mp + self.Avec[1]*self.mp))*
+                    (self.rhoX*self.eVcm**3)/(2*self.mX*(self.muxnucleon)**2))*(((1/self.eVcm)**2)*
+                    (self.eVtoInvYr/self.eVtokg))
+        else:
+            return sigman*((1/(self.A*self.mp + self.A*self.mp))*
+                    (self.rhoX*self.eVcm**3)/(2*self.mX*(self.muxnucleon)**2))*(((1/self.eVcm)**2)*
+                    (self.eVtoInvYr/self.eVtokg))
