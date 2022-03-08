@@ -6,7 +6,7 @@ See arXiv [2104.12786](https://arxiv.org/abs/2104.12786) for a description of th
 
 ## Authors
 
-Simon Knapen, Jonathan Kozaczuk and Tongyan Lin
+Brian Campbell-Deem, Simon Knapen, Jonathan Kozaczuk, Tongyan Lin and Ethan Villarama
 
 ## Physics
 ### ELF
