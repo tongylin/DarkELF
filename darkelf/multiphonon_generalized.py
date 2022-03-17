@@ -59,7 +59,8 @@ def R_multiphonons_no_single(self, threshold, sigman=1e-38, dark_photon=False):
     if threshold > (1/2)*self.mX*(self.vmax)**2:
         return 0
     else:
-        omegarange = np.logspace(np.log10(threshold), np.log10((1/2)*self.mX*(self.vmax)**2), 500)
+        npoints = 1000
+        omegarange = np.logspace(np.log10(threshold), np.log10((1/2)*self.mX*(self.vmax)**2), npoints)
             # integrates trapezoidally over this logspace since any sharp peaks are at small omega
             # can make a number of points higher in case concern of very sharp optical peaks
             # !EV need to check this again, some small amount of numerical noise comes from this choice of range

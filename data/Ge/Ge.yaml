@@ -7,3 +7,8 @@ e0 : 2.9  #for electron yield, epsilon in (5.2) of 1509.01598
 omegap : 16.
 Enl_list : [11000.,1400.,1200.,170.,120.,35.0,15.0,6.5]
 ombar : 0.02 # Averaged phonon energy, in eV
+cTAkms :
+cLAkms : 5.3
+Avec : [72.]
+n_atoms: 1
+lattice_spacing: 5.66 # Angstroms

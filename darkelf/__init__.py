@@ -52,14 +52,13 @@ class darkelf(object):
                     setattr(self, k, v)
 
         self.Avec = np.array(self.Avec)
-        
+
 
         # nucleon mass
         self.mN=self.A*self.mp
 
         # Sound speeds in units of c
         self.cLA = self.cLAkms/self.c0
-        self.cTA = self.cTAkms/self.c0
 
         # Brillouin zone in eV (isotropic approximation)
         self.qBZ = (2*pi/self.lattice_spacing)*self.eVtoA0

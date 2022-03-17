@@ -9,3 +9,8 @@ eps_inf: 5.3
 LOvec: [0.091]  # eV
 TOvec: [0.067]  # eV
 ombar: 0.018 # average phonon frequency in eV
+n_atoms: 2
+Avec: [69., 14.]
+atoms: ['Ga', 'N']
+cLAkms: 6.5 # km/s (Using elasticity parameters from materialsproject and isotropy)
+lattice_spacing: 4.54 # Angstroms

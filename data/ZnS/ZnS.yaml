@@ -2,10 +2,15 @@ rhoT :  4.09 # gram/cm^3
 omegap : 19. # eV;
 A : 65 # This only includes Zn, need to modify so that Migdal can be applied to both Zn, S
 Z : 30 # This only includes Zn, need to modify so that Migdal can be applied to both Zn, S
-Zion: 2.0 
+Zion: 2.0
 E_gap: 3.54
 ombar: 0.018 # average phonon frequency in eV
 eps_0: 8.34
 eps_inf: 5.13
 LOvec: [0.043]  # eV
 TOvec: [0.0338]  # eV
+atoms: ['Zn', 'S'] # names of atoms
+Avec: [65., 32.]
+n_atoms: 2
+cLAkms: 4.9 # km/s (Using elasticity parameters from materialsproject and isotropy)
+lattice_spacing: 5.41 # Angstrom

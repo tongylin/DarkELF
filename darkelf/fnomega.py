@@ -29,7 +29,7 @@ def create_Fn_omega(self, datadir=None, dos_filename=None, npoints=250):
         DoS filename, default is self.dos_filename which is set when the class is instantiated
     npoints: int
         number of omega points to compute Fn grid, default is 250
-        (1000 were used for calculations on draft, takes ~four hours)
+        (750 were used for calculations on draft, takes ~four hours)
     """
 
     if(datadir == None):
@@ -53,7 +53,7 @@ def create_Fn_omega(self, datadir=None, dos_filename=None, npoints=250):
             start = time.time()
             narray = np.array([])
             for i, omega in enumerate(omegarange):
-                narray = np.append(narray, self.Fn_vegas(omega, n + 1))
+                narray = np.append(narray, self.Fn_vegas(omega, n + 1, atom=0)) # only one atom indexed by 0
                 if n > 0 and ((i+1) % 50 == 0):
                     print(f'Finished point #{i + 1} out of {npoints} for {n + 1} phonons')
             end = time.time()
@@ -185,8 +185,8 @@ def load_phonon_dos(self,datadir,filename):
                 dosdat_2 = np.loadtxt(partial_dos_2_path).T
                 print("Loaded " + filename[0] + " and " + filename[1] + " for partial densities of states")
                 self.phonon_DoS = np.array([dosdat_1, dosdat_2])
-                self.DoS_interp = np.array([interp1d(i[0],i[1],kind='linear', fill_value = 0) for i in self.phonon_DoS])
-                self.dos_omega_range = np.array([self.phonon_DoS[0][0][0],self.phonon_DoS[0][0][-1] ])
+                self.DoS_interp = np.array([interp1d(i[0],i[1],kind='linear', fill_value = 0, bounds_error=False) for i in self.phonon_DoS])
+                self.dos_omega_range = np.array([ self.phonon_DoS[0][0][0], self.phonon_DoS[0][0][-1] ])
                 # Assuming same omega range for both pDOS
 
                 self.omega_bar = np.array([np.trapz(i[1]*i[0],
@@ -206,11 +206,11 @@ def load_phonon_dos(self,datadir,filename):
             dosdat = np.loadtxt(dos_path).T
             print("Loaded " + filename + " for density of states")
             self.phonon_DoS = dosdat
-            self.DoS_interp = interp1d(self.phonon_DoS[0],self.phonon_DoS[1],kind='linear', fill_value = 0)
-            self.dos_omega_range = [ dosdat[0][0], dosdat[0][-1] ]
+            self.DoS_interp = np.array([interp1d(self.phonon_DoS[0],self.phonon_DoS[1],kind='linear', fill_value = 0, bounds_error=False)])
+            self.dos_omega_range = [dosdat[0][0], dosdat[0][-1] ]
             self.omega_bar = np.trapz(self.phonon_DoS[1]*self.phonon_DoS[0],
                                         x=self.phonon_DoS[0])
-            self.omega_inverse_bar = np.trapz(self.phonon_DoS[1]/self.phonon_DoS[0],
+            self.omega_inverse_bar = np.trapz([self.phonon_DoS[1][j]/self.phonon_DoS[0][j] if self.phonon_DoS[0][j] != 0 else 0 for j in range(len(self.phonon_DoS[0]))],
                                     x=self.phonon_DoS[0])
 
     return
