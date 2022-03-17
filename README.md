@@ -1,12 +1,17 @@
 # DarkELF
 
-DarkELF is a python package capable of calculating interaction rates of light dark matter in dielectric materials, including screening effects. The full response of the material is parametrized in the terms of the energy loss function (ELF) of material, which DarkELF converts into differential scattering rates for both direct dark matter electron scattering and through the Migdal effect. In addition, DarkELF can calculate the rate to produce phonons from sub-MeV dark matter scattering via the dark photon mediator, as well as the absorption rate for dark matter comprised of dark photons. The package currently includes precomputed ELFs for Al,Al2O3, GaAs, GaN, Ge, Si, SiO2, and ZnS, and allows the user to easily add their own ELF extractions for arbitrary materials.
+DarkELF is a python package capable of calculating interaction rates of light dark matter in dielectric materials, including screening effects. The full response of the material is parametrized in the terms of the energy loss function (ELF) of material, which DarkELF converts into differential scattering rates for both direct dark matter electron scattering and through the Migdal effect. In addition, DarkELF can calculate the rate to produce phonons from sub-MeV dark matter scattering via the dark photon mediator and most multiphonon processes. It also computes the absorption rate for dark matter comprised of dark photons. The package currently includes precomputed ELFs for Al,Al2O3, GaAs, GaN, Ge, Si, SiO2, and ZnS, and allows the user to easily add their own ELF extractions for arbitrary materials.
 
 See arXiv [2104.12786](https://arxiv.org/abs/2104.12786) for a description of the implementation
 
 ## Authors
 
 Simon Knapen, Jonathan Kozaczuk and Tongyan Lin
+
+## Depencencies
+
+Python 3 with standard scientific packages such as numpy, scipy, yaml and pandas
+The multiphonon module uses the vegas monte carlo package, which can be found here https://pypi.org/project/vegas/
 
 ## Physics
 ### ELF
