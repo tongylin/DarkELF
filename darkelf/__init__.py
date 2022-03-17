@@ -90,6 +90,8 @@ class darkelf(object):
         self.load_epsilon_phonon(self.eps_data_dir,self.phonon_filename)
         # Load Atomic Migdal calculation from Ibe et al.
         self.load_Migdal_FAC(self.eps_data_dir)
+        # Load momentum dependent effective ion charge Zion(k)
+        self.load_Zion(self.eps_data_dir)
         # tabulate the shake-off probability for the Migdal calculation
         self.tabulate_I()
 
@@ -115,7 +117,7 @@ class darkelf(object):
 
     ############################################################################################
 
-    from .epsilon import load_epsilon_grid, load_epsilon_phonon
+    from .epsilon import load_epsilon_grid, load_epsilon_phonon, load_Zion
     from .epsilon import eps1_electrongas, eps1, eps2_electrongas, eps2, elf
 
     from .fnomega import Fn_integrand, Fn_vegas, load_phonon_dos, load_Fn
