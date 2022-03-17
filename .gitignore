@@ -5,3 +5,4 @@ examples/plots/*
 darkelf/__pycache__
 examples/.*
 examples/darkelf_tester.ipynb
+*.DS_Store
