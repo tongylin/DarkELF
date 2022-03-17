@@ -6,12 +6,7 @@ See arXiv [2104.12786](https://arxiv.org/abs/2104.12786) for a description of th
 
 ## Authors
 
-Simon Knapen, Jonathan Kozaczuk and Tongyan Lin
-
-## Depencencies
-
-Python 3 with standard scientific packages such as numpy, scipy, yaml and pandas
-The multiphonon module uses the vegas monte carlo package, which can be found here https://pypi.org/project/vegas/
+Brian Campbell-Deem, Simon Knapen, Jonathan Kozaczuk, Tongyan Lin and Ethan Villarama
 
 ## Physics
 ### ELF
@@ -36,7 +31,7 @@ If the DM is itself a light dark photon, it can be absorbed on phonons (arXiv [1
 
 ## Requirements and Usage
 
-DarkELF requires python 3.6 or higher, equipped with the numpy, scipy, pyyaml and pandas packages. The tutorial notebooks require a jupyter installation, but this is in general not needed for DarkELF itself.
+DarkELF requires python 3.6 or higher, equipped with the numpy, scipy, pyyaml and pandas packages. The multiphonon module uses the vegas monte carlo package, which can be found here https://pypi.org/project/vegas/ The tutorial notebooks require a jupyter installation, but this is in general not needed for DarkELF itself.
 
 The examples folder contains a tutorial jupyter notebook for each of the processes outlined above. Appendix A of the DarkELF paper contains additional explanations of the various functions and settings that are available to the user. 
 
