@@ -30,7 +30,13 @@ import sys, os, glob
 
 
 def sigma_multiphonons(self, threshold, dark_photon=False):
-    '''DM-proton cross-section [cm^2] corresponding to 3 events/kg/yr '''
+    '''
+    returns DM-proton cross-section [cm^2] corresponding to 3 events/kg/yr 
+    Inputs
+    ------
+    threshold: float in [eV]
+    dark_photon: Bool to set f_d(q) = Z_d(q) atomic charges
+    '''
     rate = self.R_multiphonons_no_single(threshold, dark_photon=dark_photon) + self.R_single_phonon(threshold, dark_photon=dark_photon)
     if rate != 0:
         return (3*1e-38)/rate
@@ -40,7 +46,7 @@ def sigma_multiphonons(self, threshold, dark_photon=False):
 
 def R_multiphonons_no_single(self, threshold, sigman=1e-38, dark_photon=False):
     """
-    Returns rate for DM off harmonic lattice, including multiphonons and excluding coherent single phonon
+    Returns rate for DM scattering off harmonic lattice, including multiphonons and excluding coherent single phonon
 
     Inputs
     ------
