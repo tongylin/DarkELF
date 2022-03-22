@@ -403,7 +403,7 @@ def R_single_phonon(self, threshold, sigman=1e-38, dark_photon=False):
 
             if dark_photon:
                 if self.fd_loaded:
-                    fd = np.array([self.fd_darkphoton[i](qrange) for i in range(2)])*sqrt(self.debye_waller(omegarange/self.cLA)).T
+                    fd = np.array([self.fd_darkphoton[i](omegarange/self.cLA) for i in range(2)])*sqrt(self.debye_waller(omegarange/self.cLA)).T
                 else:
                     fd = 0
             else:
@@ -462,9 +462,11 @@ def load_fd_darkphoton(self,datadir,filename):
                 fd_1 = np.loadtxt(fd_1_path).T
                 fd_2 = np.loadtxt(fd_2_path).T
                 print("Loaded " + filename[0] + " and " + filename[1] + " for effective charges")
-                self.fd_data = np.array([fd_1, fd_2])
-                self.fd_darkphoton = np.array([interp1d(i[0],i[1],kind='linear', fill_value = (i[1][0], i[1][-1]),bounds_error=False)
-                                                for i in self.fd_data])
+                # self.fd_data = np.array([fd_1, fd_2])
+                # self.fd_darkphoton = np.array([interp1d(i[0],i[1],kind='linear', fill_value = (i[1][0], i[1][-1]),bounds_error=False)
+                #                                for i in self.fd_data])
+                self.fd_darkphoton = np.array([interp1d(fd_1[0],fd_1[1],kind='linear', fill_value = (fd_1[1][0], fd_1[1][-1]),bounds_error=False),
+                                                interp1d(fd_2[0],fd_2[1],kind='linear', fill_value = (fd_2[1][0], fd_2[1][-1]),bounds_error=False)])
                             # Fills ends by making constant at end of ranges
 
     else:
