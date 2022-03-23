@@ -10,7 +10,6 @@ LOvec: [0.121]  # eV
 TOvec: [0.099]  # eV
 e0 : 6.5  # estimate for electron yield, see Table 1 of 2008.08560
 omegap : 22.1
-n_atoms: 2
 Avec: [28., 12.]
 atoms: ['Si', 'C']
 cLAkms: 10.9 # km/s (Using elasticity parameters from materialsproject and isotropy)

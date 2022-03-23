@@ -13,5 +13,4 @@ lattice_spacing: 5.47 # Angstroms
 cLAkms: 8.7 # km/s
 cTAkms: 5.1 # km/s
 LOvec: [0.060]  # eV
-n_atoms: 1 # Number of distinct atoms
 Avec: [28., 28.]

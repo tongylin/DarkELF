@@ -96,6 +96,7 @@ def create_Fn_omega(self, datadir=None, dos_filename=None, npoints=250):
             omegadata = np.reshape(np.append(omegarange,omegapart),(phonons+1,len(omegarange)))
             label = '# First column is omega in [eV], second column is F1(omega) in [eV-2], third column is F2(omega) in [eV-3], etc.'
             np.savetxt(fn_path, omegadata.T,header=label)
+            print("result saved in "+fn_path)
 
     else:
         print('dos_filename error')

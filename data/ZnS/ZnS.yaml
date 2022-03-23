@@ -11,6 +11,5 @@ LOvec: [0.043]  # eV
 TOvec: [0.0338]  # eV
 atoms: ['Zn', 'S'] # names of atoms
 Avec: [65., 32.]
-n_atoms: 2
 cLAkms: 4.9 # km/s (Using elasticity parameters from materialsproject and isotropy)
 lattice_spacing: 5.41 # Angstrom

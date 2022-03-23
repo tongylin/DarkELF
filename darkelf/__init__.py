@@ -25,8 +25,7 @@ class darkelf(object):
           dos_filename=target+'_DoS.dat'
         if(fd_filename==""):
           fd_filename=target+'_fd_darkphoton.dat'    
-        
-        print(filename)
+  
         
         # Useful units and constants
         self.eVtoK = 11604.5221
@@ -108,8 +107,13 @@ class darkelf(object):
         # tabulate the shake-off probability for the Migdal calculation
         self.tabulate_I()
 
-        # Load phonon density of states
+        # Load phonon density of states. First check if using total or partial density of states. This is determined by whether or not a list of DoS files is specified for the "dos_filename" flag
+        if isinstance(self.dos_filename, list):
+          self.n_atoms=len(self.dos_filename)
+        else:
+          self.n_atoms=1
         self.load_phonon_dos(self.eps_data_dir,self.dos_filename)
+        
 
         # Characteristic momenta where many phonons become important (take maximum if two distinct atoms)
         if self.n_atoms == 1:

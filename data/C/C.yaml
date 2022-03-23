@@ -12,4 +12,3 @@ cLAkms: 18. # km/s
 cTAkms: 12.2 # km/s
 LOvec: [0.140]  # eV
 Avec: [12.]
-n_atoms: 1

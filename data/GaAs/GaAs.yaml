@@ -14,6 +14,6 @@ mermin_ref: "Y. Tu, C. Kwei and C. Tung, Angular and energy dependences of the s
 lattice_spacing: 5.65 # Angstroms
 cLAkms: 5.2 # km/s
 cTAkms: 3.1 # km/s
-n_atoms: 2 # Number of distinct atoms
-atoms: ['Ga', As'] # names of atoms
+#n_atoms: 2 # Number of distinct atoms
+atoms: ['Ga', 'As'] # names of atoms
 Avec: [69, 75] # Atomic masses

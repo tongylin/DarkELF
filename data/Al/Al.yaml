@@ -8,5 +8,4 @@ Zion: 3.0
 ombar: 0.015 # average phonon frequency in eV
 Avec : [27.]
 lattice_spacing : 4.046
-n_atoms : 1
 cLAkms: 6.2 # need check for ref

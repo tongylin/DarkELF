@@ -108,8 +108,6 @@ def dPdomegadk(self,omega,k,En,method="grid",Zionkdependence=True):
     for i in range(len(omega)):
       if(hasattr(self, "Zion") and self.electron_ELF_loaded):
         if(Zionkdependence and hasattr(self, "Zion_loaded")):
-            # !EV: I noticed that this Zion_loaded never actually gets initialized, I'm not sure what's wrong
-            # so I just did a quick fix just so that the code runs..
             if self.Zion_loaded:
                 dPdomegadk[i]=(2.0*self.alphaEM*self.Zion_k(k)**2*vN**2)/(3.0*np.pi**2*omega[i]**4)*k**2*self.elf(omega[i],k,method=method)
             else:
