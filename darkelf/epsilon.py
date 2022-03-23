@@ -70,7 +70,7 @@ def load_epsilon_phonon(self,datadir,filename):
     phonon_path = datadir + self.target+'/'+ filename
 
     if( not os.path.exists(phonon_path)):
-        print("Warning! eps for phonon frequencies not loaded. Need to set phonon_filename ")
+        print("Warning! eps for phonon frequencies not loaded. Need to set phonon_filename to perform data-driven, single phonon calculations")
         self.phonon_ELF_loaded=False
     else:
         self.phonon_ELF_loaded=True

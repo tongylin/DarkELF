@@ -10,10 +10,24 @@ import yaml
 
 class darkelf(object):
     def __init__(self, mX = 1e5, mMed = -1, vesckms = 500, v0kms = 220, vekms = 240, delta = 0.0, q0=0.0,
-        target='Ge',targetyaml='',filename="Ge_gpaw_withLFE.dat", phonon_filename="Ge_epsphonon.dat",
+        target='Ge',targetyaml='',filename="", phonon_filename="",
         eps_data_dir = os.path.dirname(__file__)+"/../data/",
-        dos_filename='GaAs_DoS.dat',fd_filename='Si_fd_darkphoton.dat'):
-
+        dos_filename="",fd_filename=""):
+      
+        if(filename==""):
+          if(target=="Ge" or target=="Si"):
+            filename=target+"_gpaw_withLFE.dat"
+          else:
+            filename=target+"_mermin.dat"
+        if(phonon_filename==""):
+          phonon_filename=target+"_epsphonon.dat"
+        if(dos_filename==""):
+          dos_filename=target+'_DoS.dat'
+        if(fd_filename==""):
+          fd_filename=target+'_fd_darkphoton.dat'    
+        
+        print(filename)
+        
         # Useful units and constants
         self.eVtoK = 11604.5221
         self.eVtoA0 = 1973.2
