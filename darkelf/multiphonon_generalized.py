@@ -7,7 +7,7 @@ import sys, os, glob
 
 
 # Note!! These all assume zincblende crystal structure, which should be fine
-# for materials that we do multiph calculations for
+# for materials that we currently perform multiphonon calculations for
 
 ############################################################################################
 #  Cross section reach for kg-yr exposure for for multi-phonon excitations,
@@ -34,46 +34,58 @@ def sigma_multiphonons(self, threshold, dark_photon=False):
     returns DM-proton cross-section [cm^2] corresponding to 3 events/kg/yr 
     Inputs
     ------
-    threshold: float in [eV]
-    dark_photon: Bool to set f_d(q) = Z_d(q) atomic charges
+    threshold: float 
+      experimental threshold, in eV
+    dark_photon: Bool 
+      If set to True, a dark photon mediator is assumed, by setting f_d(q) = Z_d(q), with Z_d(q) the momentum dependent effective charges. If set to False, darkELF sets f_d=A_d, which corresponds to a scalar mediator with coupling to nuclei.
     '''
     rate = self.R_multiphonons_no_single(threshold, dark_photon=dark_photon) + self.R_single_phonon(threshold, dark_photon=dark_photon)
     if rate != 0:
-        return (3*1e-38)/rate
+        return (3.0*1e-38)/rate
     else:
         return float('inf')
 
 
 def R_multiphonons_no_single(self, threshold, sigman=1e-38, dark_photon=False):
     """
-    Returns rate for DM scattering off harmonic lattice, including multiphonons and excluding coherent single phonon
+    Returns rate for DM scattering with a harmonic lattice, including multiphonon contributions but excluding the coherent single phonon contribution
 
     Inputs
     ------
     threshold: float in [eV]
     sigma_n: float
-        DM-nucleon cross section in [cm^2], defined at reference momentum of q0.
+        DM-nucleon cross section in [cm^2], defined with respect to the reference momentum of q0. (q0 is specified by the 'update_params' function)
         DM-nucleus cross section assumed to be coherently enhanced by A^2 by default (if dark photon flag not set)
-    dark_photon: Bool to set f_d(q) = Z_d(q) atomic charges
+    dark_photon: boole
+        If set to True, a dark photon mediator is assumed, by setting f_d(q) = Z_d(q), with Z_d(q) the momentum dependent effective charges. If set to False, darkELF sets f_d=A_d, which corresponds to a scalar mediator with coupling to nuclei.
 
     Outputs
     -------
     rate as function of threshold, in [1/kg/yr]
     """
-    '''Full rate in events/kg/yr, dm-nucleon cross-section 1e-38 [cm^2]'''
-
-    if threshold > (1/2)*self.mX*(self.vmax)**2:
+    omega_max=(1/2)*self.mX*(self.vmax)**2
+    if threshold > omega_max:
         return 0
     else:
         npoints = 1000
-        omegarange = np.logspace(np.log10(threshold), np.log10((1/2)*self.mX*(self.vmax)**2), npoints)
-            # integrates trapezoidally over this logspace since any sharp peaks are at small omega
-            # can make a number of points higher in case concern of very sharp optical peaks
-            # !EV need to check this again, some small amount of numerical noise comes from this choice of range
+        # using linear sampling for omega < 0.1 eV and log sampling for omega > 0.1 eV
+        if(threshold<0.1):
+            omegarange_linear=np.linspace(threshold,np.min([0.1,omega_max]), npoints)
+            dR_linear=[self._dR_domega_multiphonons_no_single(omega, sigman=sigman, dark_photon=dark_photon) for omega in omegarange_linear]
+            R_linear=np.trapz(dR_linear, omegarange_linear)
+        else:
+            R_linear=0.0
+        if(omega_max>0.1):
+            omegarange_log=np.logspace(-1.0,np.log10(omega_max), npoints)
+            dR_log=[self._dR_domega_multiphonons_no_single(omega, sigman=sigman, dark_photon=dark_photon) for omega in omegarange_log]
+            R_log=np.trapz(dR_log, omegarange_log)
+        else:
+            R_log=0
 
-        dr_domega = [self._dR_domega_multiphonons_no_single(omega, sigman=sigman, dark_photon=dark_photon) for omega in omegarange]
-        return np.trapz(dr_domega, omegarange)
-
+        return R_linear+R_log
+      
+   
+      
 # Multiphonon_expansion term
 
 def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=False):

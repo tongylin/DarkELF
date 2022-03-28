@@ -14,11 +14,11 @@ import pandas as pd
 # Makes Fn(omega) files from an input DoS file
 
 
-def create_Fn_omega(self, datadir=None, dos_filename=None, npoints=250):
+def create_Fn_omega(self, datadir=None, dos_filename=None, phonons = 10,npoints=250):
     """
     Function to create .dat files for Fn(omega), used in multiphonons calculation.
 
-    Default makes the Fn files for 10 phonons with the density of states
+    Default makes the Fn files forup to 10 phonons with the density of states
         loaded at class instantiation, then loads in new Fn.
 
     Inputs
@@ -27,9 +27,11 @@ def create_Fn_omega(self, datadir=None, dos_filename=None, npoints=250):
         directory with DoS file, default is self.eps_data_dir with all the other data
     dos_filename: string
         DoS filename, default is self.dos_filename which is set when the class is instantiated
+    phonons: int
+        specifies up to how many phonons Fn is calculated for. Default value is 10.
     npoints: int
         number of omega points to compute Fn grid, default is 250
-        (750 were used for calculations on draft, takes ~four hours)
+        (750 were used for calculations in draft, takes ~four hours)
     """
 
     if(datadir == None):
@@ -42,7 +44,7 @@ def create_Fn_omega(self, datadir=None, dos_filename=None, npoints=250):
         dos_path = datadir + self.target+'/'+ dos_filename
         fn_path = datadir + self.target+'/'+ dos_filename.replace('_DoS','_Fn')
 
-        phonons = 10
+        
 
         omegarange = np.linspace(self.dos_omega_range[0],
                             (phonons/2)*self.dos_omega_range[1], npoints)

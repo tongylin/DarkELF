@@ -197,6 +197,10 @@ class darkelf(object):
             Set vesc in units of km/s
         vekms: float
             Set vesc in units of km/s
+        mediator: string 'massive' or 'massless'
+            Specifies whether the massive or massless mediator limit is used. This flag is not used if the mediator mass is specified explicitly with the "mMed" flag
+        q0: float
+            choice of reference momentum to define the cross section in the case of a massless mediator. The default is q0=v0*mX.    
         """
 
         if(mX > 0):
