@@ -144,7 +144,9 @@ def R_multiphonons_no_single(self, threshold, sigman=1e-38, dark_photon=False):
 def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=False):
 
     '''dR_domega single-phonon coherent removed'''
-
+    if(dark_photon): # check if effective charges are loaded
+        assert self.fd_loaded, "Error: effective charge not loaded. Cannot perform calculation for dark photon mediator."
+        
     if omega > self.omegaDMmax:
         return 0      
       
@@ -165,16 +167,13 @@ def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=Fal
 
     if self.n_atoms == 2:
         if dark_photon:
-            assert self.fd_loaded, "Error: effective charge not loaded. Cannot perform calculation for dark photon mediator."
             fd = np.array([self.fd_darkphoton[i](qrange) for i in range(2)])\
             *sqrt(self.debye_waller(qrange)).T
-
         else:
             fd = np.tile(np.array([self.Avec]),(npoints, 1)).T*sqrt(self.debye_waller(qrange)).T
     
     else:
         if dark_photon:
-            assert self.fd_loaded, "Error: effective charge not loaded. Cannot perform calculation for dark photon mediator."
             fd = np.array([self.fd_darkphoton(qrange),self.fd_darkphoton(qrange)])*sqrt(self.debye_waller(qrange)).T
                 # need fix this part.. ## SK??
         else:
@@ -222,10 +221,7 @@ def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=Fal
             impulse_approx_part = 0
 
             if dark_photon:
-                if self.fd_loaded:
-                    fd = np.array([self.fd_darkphoton[i](qrange) for i in range(2)])
-                else:
-                    fd = 0
+                fd = np.array([self.fd_darkphoton[i](qrange) for i in range(2)])
             else:
                 fd = np.tile(np.array(self.Avec), (npoints, 1)).T
 
@@ -242,12 +238,8 @@ def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=Fal
         else:
 
             if dark_photon:
-                if self.fd_loaded:
-                    fd = self.fd_darkphoton(qrange)
-                else:
-                    fd = 0
+                fd = self.fd_darkphoton(qrange)
             else:
-
                 fd = self.A
 
             formfactorsquared = self.Fmed_nucleus(qrange)**2
@@ -273,7 +265,9 @@ def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=Fal
 def _dR_domega_coherent_single(self, omega, sigman=1e-38, dark_photon=False):
 
 #   internal function used for plotting, don't integrate over as there are artificial sharp peaks
-
+    if(dark_photon): # check if effective charges are loaded
+        assert self.fd_loaded, "Error: effective charge not loaded. Cannot perform calculation for dark photon mediator."
+      
     if self.vmax**2 < 2*omega/self.mX:
         return 0
 
@@ -286,20 +280,12 @@ def _dR_domega_coherent_single(self, omega, sigman=1e-38, dark_photon=False):
     # following stuff is doing the acoustic part analytically
     if self.n_atoms == 2:
         if dark_photon:
-            if self.fd_loaded:
-                fd = np.array([self.fd_darkphoton[i](omega/self.cLA) for i in range(2)])*sqrt(self.debye_waller(omega/self.cLA))
-            else:
-                # print('Form factor not loaded, load with form_factor_filename, defaulted to massive mediator')
-                fd = 0
+            fd = np.array([self.fd_darkphoton[i](omega/self.cLA) for i in range(2)])*sqrt(self.debye_waller(omega/self.cLA))
         else:
             fd = self.Avec
     else:
         if dark_photon:
-            if self.fd_loaded:
-                fd = np.array([self.fd_darkphoton(omega/self.cLA), self.fd_darkphoton(omega/self.cLA)])*sqrt(self.debye_waller(omega/self.cLA))
-            else:
-                # print('Form factor not loaded, load with form_factor_filename, defaulted to massive mediator')
-                fd = 0
+            fd = np.array([self.fd_darkphoton(omega/self.cLA), self.fd_darkphoton(omega/self.cLA)])*sqrt(self.debye_waller(omega/self.cLA))
         else:
             fd = np.array([self.A, self.A])*sqrt(self.debye_waller(omega/self.cLA))
 
@@ -328,22 +314,14 @@ def _dR_domega_coherent_single(self, omega, sigman=1e-38, dark_photon=False):
 
         if self.n_atoms == 2:
             if dark_photon:
-                if self.fd_loaded:
-                    fd = np.array([self.fd_darkphoton[i](q) for i in range(2)])*sqrt(self.debye_waller(q))
-                else:
-                    # print('Form factor not loaded, load with form_factor_filename, defaulted to massive mediator')
-                    fd = 0
+                fd = np.array([self.fd_darkphoton[i](q) for i in range(2)])*sqrt(self.debye_waller(q))
             else:
                 fd = self.Avec*sqrt(self.debye_waller(q))
 
         else:
             if dark_photon:
-                if self.fd_loaded:
-                    fd = np.array([self.fd_darkphoton(q), self.fd_darkphoton(q)])*sqrt(self.debye_waller(q))
+                fd = np.array([self.fd_darkphoton(q), self.fd_darkphoton(q)])*sqrt(self.debye_waller(q))
                     # !EV: rearrange factors of 2, currently have debye_waller function defined as e^(-2W(q))
-                else:
-                    # print('Form factor not loaded, load with form_factor_filename, defaulted to massive mediator')
-                    fd = 0
             else:
                 fd = np.array([self.A, self.A])*self.debye_waller(q)
                 # !EV I've written this in a way I don't like, need to rearrange stuff
@@ -374,7 +352,9 @@ def R_single_phonon(self, threshold, sigman=1e-38, dark_photon=False):
 
     ###############################
     # Optical part
-
+    if(dark_photon): # check if effective charges are loaded
+        assert self.fd_loaded, "Error: effective charge not loaded. Cannot perform calculation for dark photon mediator."
+        
     if (self.LOvec[0] < threshold) or (self.mX*self.vmax**2/2 < self.LOvec[0]):
         optical_rate = 0
     else:
@@ -397,10 +377,7 @@ def R_single_phonon(self, threshold, sigman=1e-38, dark_photon=False):
             if self.n_atoms == 2:
 
                 if dark_photon:
-                    if self.fd_loaded:
-                        fd = np.array([self.fd_darkphoton[i](qrange) for i in range(2)])*sqrt(self.debye_waller(qrange)).T
-                    else:
-                        fd = 0
+                    fd = np.array([self.fd_darkphoton[i](qrange) for i in range(2)])*sqrt(self.debye_waller(qrange)).T
                 else:
                     fd = np.tile(np.array([self.Avec]),(npoints, 1)).T*sqrt(self.debye_waller(qrange)).T
 
@@ -422,10 +399,7 @@ def R_single_phonon(self, threshold, sigman=1e-38, dark_photon=False):
                 optical_factor2 = 1/(self.A + self.A)
 
                 if dark_photon:
-                    if self.fd_loaded:
-                        fd = self.fd_darkphoton(qrange)
-                    else:
-                        fd = 0
+                    fd = self.fd_darkphoton(qrange)
                 else:
                     fd = self.A
 
@@ -455,10 +429,7 @@ def R_single_phonon(self, threshold, sigman=1e-38, dark_photon=False):
         if self.n_atoms == 2:
 
             if dark_photon:
-                if self.fd_loaded:
-                    fd = np.array([self.fd_darkphoton[i](omegarange/self.cLA) for i in range(2)])*sqrt(self.debye_waller(omegarange/self.cLA)).T
-                else:
-                    fd = 0
+                fd = np.array([self.fd_darkphoton[i](omegarange/self.cLA) for i in range(2)])*sqrt(self.debye_waller(omegarange/self.cLA)).T
             else:
                 fd = np.tile(np.array([self.Avec]),(npoints, 1)).T*sqrt(self.debye_waller(omegarange/self.cLA)).T
 
@@ -470,10 +441,7 @@ def R_single_phonon(self, threshold, sigman=1e-38, dark_photon=False):
 
         else:
             if dark_photon:
-                if self.fd_loaded:
-                    fd = self.fd_darkphoton(omegarange/self.cLA)
-                else:
-                    fd = 0
+                fd = self.fd_darkphoton(omegarange/self.cLA)
             else:
                 fd = self.A
 
