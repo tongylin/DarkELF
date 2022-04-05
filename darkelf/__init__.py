@@ -21,11 +21,6 @@ class darkelf(object):
             filename=target+"_mermin.dat"
         if(phonon_filename==""):
           phonon_filename=target+"_epsphonon.dat"
-        if(dos_filename==""):
-          dos_filename=target+'_DoS.dat'
-        if(fd_filename==""):
-          fd_filename=target+'_fd_darkphoton.dat'    
-  
         
         # Useful units and constants
         self.eVtoK = 11604.5221
@@ -65,8 +60,20 @@ class darkelf(object):
                     setattr(self, k, v)
 
         self.Avec = np.array(self.Avec)
-
-
+        self.n_atoms = len(self.atoms) 
+        
+        # select the default DOS
+        if(dos_filename=="" and self.n_atoms==1):
+          dos_filename=target+'_DoS.dat'
+        if(dos_filename=="" and self.n_atoms==2):
+          dos_filename=[self.atoms[0]+'_pDoS.dat',self.atoms[1]+'_pDoS.dat']
+          
+        # select the default fd file  
+        if(fd_filename=="" and self.n_atoms==1):
+          fd_filename=target+'_atomic_Zion.dat'
+        if(fd_filename=="" and self.n_atoms==2):
+          fd_filename=[self.atoms[0]+'_atomic_Zion.dat',self.atoms[1]+'_atomic_Zion.dat']  
+        
         # nucleon mass
         self.mN=self.A*self.mp
 
@@ -102,18 +109,16 @@ class darkelf(object):
         self.load_epsilon_phonon(self.eps_data_dir,self.phonon_filename)
         # Load Atomic Migdal calculation from Ibe et al.
         self.load_Migdal_FAC(self.eps_data_dir)
-        # Load momentum dependent effective ion charge Zion(k)
+        # Load momentum dependent effective ion charge Zion(k) for Migdal
         self.load_Zion(self.eps_data_dir)
+        # Load momentum dependent effective ion charge Zion(k) for multiphonon (REDUNDANCY, need to fix)
+        self.load_fd_darkphoton(self.eps_data_dir,self.fd_filename)
+        # load density of states
+        self.load_phonon_dos(self.eps_data_dir,self.dos_filename)
+        # Load precomputed Fn(omega) functions for multiphonon calculation
+        self.load_Fn(self.eps_data_dir,self.dos_filename)
         # tabulate the shake-off probability for the Migdal calculation
         self.tabulate_I()
-
-        # Load phonon density of states. First check if using total or partial density of states. This is determined by whether or not a list of DoS files is specified for the "dos_filename" flag
-        if isinstance(self.dos_filename, list):
-          self.n_atoms=len(self.dos_filename)
-        else:
-          self.n_atoms=1
-        self.load_phonon_dos(self.eps_data_dir,self.dos_filename)
-        
 
         # Characteristic momenta where many phonons become important (take maximum if two distinct atoms)
         if self.n_atoms == 1:
@@ -124,14 +129,8 @@ class darkelf(object):
             print('Check number of atoms in yaml file')
 
 
-        # Load Fn(omega) functions
-        self.load_Fn(self.eps_data_dir,self.dos_filename)
 
-        # Load form factor functions
-        self.load_fd_darkphoton(self.eps_data_dir,self.fd_filename)
-
-
-
+      
     ############################################################################################
 
     from .epsilon import load_epsilon_grid, load_epsilon_phonon, load_Zion
@@ -141,8 +140,9 @@ class darkelf(object):
     from .fnomega import create_Fn_omega
 
     from .multiphonon_generalized import sigma_multiphonons, R_multiphonons_no_single, R_single_phonon
-    from .multiphonon_generalized import _dR_domega_multiphonons_no_single, _dR_domega_coherent_single
+    from .multiphonon_generalized import _dR_domega_multiphonons_no_single, _dR_domega_coherent_single, _R_multiphonons_prefactor
     from .multiphonon_generalized import load_fd_darkphoton
+    from .multiphonon_generalized import debye_waller, _debye_waller_scalar
 
     from .electron import R_electron, dRdomega_electron, dRdomegadk_electron
     from .electron import electron_yield, dRdQ_electron
@@ -333,60 +333,16 @@ class darkelf(object):
     # Minimum and maximum allowed q values (TOTAL momentum transfer), given omega (energy deposited) and other DM params
     def qmin(self,omega):
         if( omega + self.delta < self.omegaDMmax):
-            return self.mX*(self.veavg+self.vesc) - np.sqrt(self.mX**2*(self.veavg+self.vesc)**2 \
+            return self.mX*self.vmax - np.sqrt(self.mX**2*self.vmax**2 \
                 - 2 * (omega + self.delta) * self.mX)
         else:
             return 0
 
     def qmax(self,omega):
         if( omega + self.delta < self.omegaDMmax):
-            return self.mX*(self.veavg+self.vesc) + np.sqrt(self.mX**2*(self.veavg+self.vesc)**2  \
+            return self.mX*self.vmax + np.sqrt(self.mX**2*self.vmax**2  \
                 - 2 * (omega + self.delta) * self.mX)
         else:
             return 0
 
-    ### Useful functions for multiphonon calculations
-
-    def _debye_waller_scalar(self, q):
-        # Debye-Waller factor set to 1 when q^2 small relative to characteristic q, for numerical convenience
-
-        if self.n_atoms == 1:
-
-            one_over_q2_char = self.omega_inverse_bar/(2*self.A*self.mp)
-
-            if (one_over_q2_char*q**2 < 0.03):
-                return 1
-            else:
-                return exp(-one_over_q2_char*q**2)
-
-        else:
-
-            one_over_q2_char = self.omega_inverse_bar/(2*self.Avec*self.mp)
-
-
-            return np.where(np.less(one_over_q2_char*q**2, 0.03), 1, exp(-one_over_q2_char*q**2))
-
-
-    def debye_waller(self, q):
-        '''Debye Waller factor
-        Inputs
-        ------
-        q: float or array in units of eV'''
-        if (isinstance(q,(np.ndarray,list)) ):
-            return np.array([self._debye_waller_scalar(qi) for qi in q])
-        elif(isinstance(q,float)):
-            return self._debye_waller_scalar(q)
-        else:
-            print("Warning! debye_waller function given invalid quantity ")
-            return 0.0
-
-    def _R_multiphonons_prefactor(self, sigman):
-        # Input sigman in cm^2 output rate pre-factor in cm^2
-        if self.n_atoms == 2:
-            return sigman*((1/(self.Avec[0]*self.mp + self.Avec[1]*self.mp))*
-                    (self.rhoX*self.eVcm**3)/(2*self.mX*(self.muxnucleon)**2))*(((1/self.eVcm)**2)*
-                    (self.eVtoInvYr/self.eVtokg))
-        else:
-            return sigman*((1/(self.A*self.mp + self.A*self.mp))*
-                    (self.rhoX*self.eVcm**3)/(2*self.mX*(self.muxnucleon)**2))*(((1/self.eVcm)**2)*
-                    (self.eVtoInvYr/self.eVtokg))
+   
