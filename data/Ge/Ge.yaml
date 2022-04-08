@@ -11,3 +11,4 @@ LOvec : [0.036] # eV, check this, it says 40 meV in the previous paper?!
 cLAkms : 5.3
 Avec : [72.]
 lattice_spacing: 5.66 # Angstroms
+atoms: ["Ge"]
