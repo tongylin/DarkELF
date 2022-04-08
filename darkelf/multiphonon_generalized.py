@@ -78,17 +78,17 @@ def _R_multiphonons_prefactor(self, sigman):
 
 def sigma_multiphonons(self, threshold, dark_photon=False):
     '''
-    returns DM-proton cross-section [cm^2] corresponding to 3 events/kg/yr 
+    returns DM-proton cross-section [cm^2] corresponding to 3 events/kg/yr
     Inputs
     ------
-    threshold: float 
+    threshold: float
       experimental threshold, in eV
-    dark_photon: Bool 
+    dark_photon: Bool
       If set to True, a dark photon mediator is assumed, by setting f_d(q) = Z_d(q), with Z_d(q) the momentum dependent effective charges. If set to False, darkELF sets f_d=A_d, which corresponds to a scalar mediator with coupling to nuclei.
     '''
     if dark_photon:
       assert self.fd_loaded, "Error: effective charge not loaded. Cannot perform calculation for dark photon mediator."
-    
+
     rate = self.R_multiphonons_no_single(threshold, dark_photon=dark_photon) + self.R_single_phonon(threshold, dark_photon=dark_photon)
     if rate != 0:
         return (3.0*1e-38)/rate
@@ -115,7 +115,7 @@ def R_multiphonons_no_single(self, threshold, sigman=1e-38, dark_photon=False):
     """
     if dark_photon:
       assert self.fd_loaded, "Error: effective charge not loaded. Cannot perform calculation for dark photon mediator."
-    
+
     if threshold > self.omegaDMmax:
         return 0
     else:
@@ -136,9 +136,9 @@ def R_multiphonons_no_single(self, threshold, sigman=1e-38, dark_photon=False):
             R_log=0
 
         return R_linear+R_log
-      
-   
-      
+
+
+
 # Multiphonon_expansion term
 
 def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=False):
@@ -146,19 +146,19 @@ def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=Fal
     '''dR_domega single-phonon coherent removed'''
     if(dark_photon): # check if effective charges are loaded
         assert self.fd_loaded, "Error: effective charge not loaded. Cannot perform calculation for dark photon mediator."
-        
+
     if omega > self.omegaDMmax:
-        return 0      
-      
+        return 0
+
     if (omega > self.dos_omega_range[-1]):
         qmin=self.qmin(omega)
     else: ## For q<qBZ and omega<max phonon energy, we use the single phonon rate.
         qmin = max(self.qmin(omega), self.qBZ)
-    
+
     # for q>q_IA_cut, the impulse approximation is used
     q_IA_cut = max([2*sqrt(2*self.Avec[i]*self.mp*self.omega_bar[i]) for i in np.arange(self.n_atoms)])
     qmax = min(self.qmax(omega), q_IA_cut)
-    
+
     if qmin >= qmax:
         return 0
 
@@ -171,7 +171,7 @@ def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=Fal
             *sqrt(self.debye_waller(qrange)).T
         else:
             fd = np.tile(np.array([self.Avec]),(npoints, 1)).T*sqrt(self.debye_waller(qrange)).T
-    
+
     else:
         if dark_photon:
             fd = np.array([self.fd_darkphoton(qrange),self.fd_darkphoton(qrange)])*sqrt(self.debye_waller(qrange)).T
@@ -190,7 +190,7 @@ def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=Fal
                 otherpart[i] += (1/(2*self.Avec[i]*self.mp))**n*qpart*self.Fn_interpolations[i][n](omega)
 
     else:
-        otherpart = np.zeros(npoints) 
+        otherpart = np.zeros(npoints)
         for n in range(1, len(self.phonon_Fn)):
             qpart = qrange**(2*n + 1)
             otherpart += (1.0/(2*self.A*self.mp))**n*qpart*self.Fn_interpolations[n](omega)
@@ -267,7 +267,7 @@ def _dR_domega_coherent_single(self, omega, sigman=1e-38, dark_photon=False):
 #   internal function used for plotting, don't integrate over as there are artificial sharp peaks
     if(dark_photon): # check if effective charges are loaded
         assert self.fd_loaded, "Error: effective charge not loaded. Cannot perform calculation for dark photon mediator."
-      
+
     if self.vmax**2 < 2*omega/self.mX:
         return 0
 
@@ -290,9 +290,9 @@ def _dR_domega_coherent_single(self, omega, sigman=1e-38, dark_photon=False):
             fd = np.array([self.A, self.A])*sqrt(self.debye_waller(omega/self.cLA))
 
     formfactorsquared = self.Fmed_nucleus(omega/self.cLA)**2
-    
+
     # this bit is only scalar mediators, need protection from dark_photon flag
-    if (omega < 2*self.mX*self.cLA*(self.vmax - self.cLA)) and (omega < self.cLA*self.qBZ):
+    if (omega < 2*self.mX*self.cLA*(self.vmax - self.cLA)) and (omega < self.cLA*self.qBZ) and (omega < self.LOvec[0]):
         if self.n_atoms == 2:
             acoustic_part = ((np.sum(fd)**2/np.sum(self.Avec))*(1/(2*self.mp))*((omega/self.cLA)**2/self.cLA**2)*
                         formfactorsquared*
@@ -354,7 +354,7 @@ def R_single_phonon(self, threshold, sigman=1e-38, dark_photon=False):
     # Optical part
     if(dark_photon): # check if effective charges are loaded
         assert self.fd_loaded, "Error: effective charge not loaded. Cannot perform calculation for dark photon mediator."
-        
+
     if (self.LOvec[0] < threshold) or (self.mX*self.vmax**2/2 < self.LOvec[0]):
         optical_rate = 0
     else:
@@ -415,7 +415,7 @@ def R_single_phonon(self, threshold, sigman=1e-38, dark_photon=False):
     # Acoustic part
 
     omegamin = threshold
-    omegamax = min(2*self.mX*self.cLA*(self.vmax - self.cLA), self.cLA*self.qBZ, self.mX*self.vmax**2/2)
+    omegamax = min(2*self.mX*self.cLA*(self.vmax - self.cLA), self.cLA*self.qBZ, self.mX*self.vmax**2/2, self.LOvec[0])
 
     if omegamax < omegamin:
         acoustic_rate = 0
