@@ -156,7 +156,10 @@ def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=Fal
         qmin = max(self.qmin(omega), self.qBZ)
 
     # for q>q_IA_cut, the impulse approximation is used
-    q_IA_cut = max([2*sqrt(2*self.Avec[i]*self.mp*self.omega_bar[i]) for i in np.arange(self.n_atoms)])
+    if self.n_atoms == 2:
+        q_IA_cut = max([2*sqrt(2*self.Avec[i]*self.mp*self.omega_bar[i]) for i in np.arange(self.n_atoms)])
+    else:
+        q_IA_cut = 2*sqrt(2*self.Avec[0]*self.mp*self.omega_bar)
     qmax = min(self.qmax(omega), q_IA_cut)
 
     if qmin >= qmax:

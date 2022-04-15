@@ -44,7 +44,7 @@ def create_Fn_omega(self, datadir=None, dos_filename=None, phonons = 10,npoints=
         dos_path = datadir + self.target+'/'+ dos_filename
         fn_path = datadir + self.target+'/'+ dos_filename.replace('_DoS','_Fn')
 
-        
+
 
         omegarange = np.linspace(self.dos_omega_range[0],
                             (phonons/2)*self.dos_omega_range[1], npoints)
