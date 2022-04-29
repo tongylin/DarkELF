@@ -13,7 +13,7 @@ class darkelf(object):
         target='Ge',targetyaml='',filename="", phonon_filename="",
         eps_data_dir = os.path.dirname(__file__)+"/../data/",
         dos_filename="",fd_filename=""):
-      
+
         if(filename==""):
           if(target=="Ge" or target=="Si"):
             filename=target+"_gpaw_withLFE.dat"
@@ -21,7 +21,7 @@ class darkelf(object):
             filename=target+"_mermin.dat"
         if(phonon_filename==""):
           phonon_filename=target+"_epsphonon.dat"
-        
+
         # Useful units and constants
         self.eVtoK = 11604.5221
         self.eVtoA0 = 1973.2
@@ -60,20 +60,20 @@ class darkelf(object):
                     setattr(self, k, v)
 
         self.Avec = np.array(self.Avec)
-        self.n_atoms = len(self.atoms) 
-        
+        self.n_atoms = len(self.atoms)
+
         # select the default DOS
         if(dos_filename=="" and self.n_atoms==1):
           dos_filename=target+'_DoS.dat'
         if(dos_filename=="" and self.n_atoms==2):
           dos_filename=[self.atoms[0]+'_pDoS.dat',self.atoms[1]+'_pDoS.dat']
-          
-        # select the default fd file  
+
+        # select the default fd file
         if(fd_filename=="" and self.n_atoms==1):
           fd_filename=target+'_atomic_Zion.dat'
         if(fd_filename=="" and self.n_atoms==2):
-          fd_filename=[self.atoms[0]+'_atomic_Zion.dat',self.atoms[1]+'_atomic_Zion.dat']  
-        
+          fd_filename=[self.atoms[0]+'_atomic_Zion.dat',self.atoms[1]+'_atomic_Zion.dat']
+
         # nucleon mass
         self.mN=self.A*self.mp
 
@@ -122,15 +122,21 @@ class darkelf(object):
 
         # Characteristic momenta where many phonons become important (take maximum if two distinct atoms)
         if self.n_atoms == 1:
-            self.qchar = sqrt(2*self.A*self.mp*self.omega_bar)
+            if hasattr(self, 'omega_bar'):
+                self.qchar = sqrt(2*self.A*self.mp*self.omega_bar)
+            else:
+                self.qchar = 0. # temporarily here for compatibility with old code
         elif self.n_atoms == 2:
-            self.qchar = max([2*self.Avec[i]*self.mp*self.omega_bar[i] for i in [0, 1]])
+            if hasattr(self, 'omega_bar'):
+                self.qchar = max([2*self.Avec[i]*self.mp*self.omega_bar[i] for i in [0, 1]])
+            else:
+                self.qchar = 0
         else:
             print('Check number of atoms in yaml file')
 
 
 
-      
+
     ############################################################################################
 
     from .epsilon import load_epsilon_grid, load_epsilon_phonon, load_Zion
@@ -139,10 +145,10 @@ class darkelf(object):
     from .fnomega import Fn_integrand, Fn_vegas, load_phonon_dos, load_Fn
     from .fnomega import create_Fn_omega
 
-    from .multiphonon_generalized import sigma_multiphonons, R_multiphonons_no_single, R_single_phonon
-    from .multiphonon_generalized import _dR_domega_multiphonons_no_single, _dR_domega_coherent_single, _R_multiphonons_prefactor
-    from .multiphonon_generalized import load_fd_darkphoton
-    from .multiphonon_generalized import debye_waller, _debye_waller_scalar
+    from .multiphonon import sigma_multiphonons, R_multiphonons_no_single, R_single_phonon
+    from .multiphonon import _dR_domega_multiphonons_no_single, _dR_domega_coherent_single, _R_multiphonons_prefactor
+    from .multiphonon import load_fd_darkphoton
+    from .multiphonon import debye_waller, _debye_waller_scalar
 
     from .electron import R_electron, dRdomega_electron, dRdomegadk_electron
     from .electron import electron_yield, dRdQ_electron
@@ -200,7 +206,7 @@ class darkelf(object):
         mediator: string 'massive' or 'massless'
             Specifies whether the massive or massless mediator limit is used. This flag is not used if the mediator mass is specified explicitly with the "mMed" flag
         q0: float
-            choice of reference momentum to define the cross section in the case of a massless mediator. The default is q0=v0*mX.    
+            choice of reference momentum to define the cross section in the case of a massless mediator. The default is q0=v0*mX.
         """
 
         if(mX > 0):
@@ -344,5 +350,3 @@ class darkelf(object):
                 - 2 * (omega + self.delta) * self.mX)
         else:
             return 0
-
-   

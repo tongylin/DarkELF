@@ -9,3 +9,4 @@ ombar: 0.015 # average phonon frequency in eV
 Avec : [27.]
 lattice_spacing : 4.046
 cLAkms: 6.2 # need check for ref
+atoms: ['Al']
