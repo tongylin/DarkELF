@@ -23,10 +23,6 @@ def files(target,path=os.path.dirname(__file__)+"/../data/"):
         if ('DoS' not in file) and ('pDoS' not in file) and ('Fn' not in file):
             print('\t',file.split("/")[-1])
     print(" ")
-    print('Available data for phonon density of states: ')
-    for file in glob.glob(path +str(target)+"/*_DoS.dat"):
-            print('\t',file.split("/")[-1])
-    print(" ")
     print('Available data for phonon partial density of states: ')
     for file in glob.glob(path +str(target)+"/*_pDoS.dat"):
             print('\t',file.split("/")[-1])
