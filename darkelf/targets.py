@@ -32,5 +32,5 @@ def files(target,path=os.path.dirname(__file__)+"/../data/"):
             print('\t',file.split("/")[-1])
     print(" ")
     print('Available data for form factors: ')
-    for file in glob.glob(path +str(target)+"/*form_factor.dat"):
+    for file in glob.glob(path +str(target)+"/*Zion.dat"):
             print('\t',file.split("/")[-1])
