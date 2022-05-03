@@ -91,7 +91,7 @@ def load_epsilon_phonon(self,datadir,filename):
 
 def load_Zion(self,datadir):
 
-    Zion_path = datadir + self.target+'/'+ self.target+"_Zion.dat"
+    Zion_path = datadir + self.target+'/'+ self.Zion_filename
 
     if( not os.path.exists(Zion_path)):
         print("Warning! Momentum Zion not loaded. Using Z - number of valence electrons.")

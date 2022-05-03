@@ -12,7 +12,7 @@ class darkelf(object):
     def __init__(self, mX = 1e5, mMed = -1, vesckms = 500, v0kms = 220, vekms = 240, delta = 0.0, q0=0.0,
         target='Ge',targetyaml='',filename="", phonon_filename="",
         eps_data_dir = os.path.dirname(__file__)+"/../data/",
-        dos_filename="",fd_filename=""):
+        dos_filename="",fd_filename="",Zion_filename=""):
 
         if(filename==""):
           if(target=="Ge" or target=="Si"):
@@ -20,7 +20,24 @@ class darkelf(object):
           else:
             filename=target+"_mermin.dat"
         if(phonon_filename==""):
-          phonon_filename=target+"_epsphonon.dat"
+          if(target=="Al2O3"):
+            phonon_filename="Al2O3_epsphonon_o.dat"
+          elif(target=="GaAs"):
+            phonon_filename="GaAs_epsphonon_data10K.dat"
+          elif(target=="GaN"):
+            phonon_filename="GaN_epsphonon_300K.dat"
+          elif(target=="Ge"):
+            phonon_filename="Ge_epsphonon_data2K.dat"
+          elif(target=="Si"):
+            phonon_filename="Si_epsphonon_data6K.dat"
+          elif(target=="SiC"):
+            phonon_filename="SiC_epsphonon_3C.dat"
+          elif(target=="ZnS"):
+            phonon_filename="ZnS_epsphonon_300K.dat"
+          else:
+            phonon_filename=""
+          if Zion_filename=="":
+            Zion_filename=target+"_Zion.dat"
 
         # Useful units and constants
         self.eVtoK = 11604.5221
@@ -96,9 +113,9 @@ class darkelf(object):
         self.filename = filename
         self.phonon_filename = phonon_filename
         self.eps_data_dir = eps_data_dir
-
         self.dos_filename = dos_filename
         self.fd_filename = fd_filename
+        self.Zion_filename = Zion_filename
 
         # Default is to use tabulated dielectric functions, assuming they are available.
         print(" .... Loading files for " + self.target)
