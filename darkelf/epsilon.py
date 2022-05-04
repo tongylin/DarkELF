@@ -94,7 +94,7 @@ def load_Zion(self,datadir):
     Zion_path = datadir + self.target+'/'+ self.Zion_filename
 
     if( not os.path.exists(Zion_path)):
-        print("Warning! Momentum Zion not loaded. Using Z - number of valence electrons.")
+        print("Warning! Momentum dependent Zion for Migdal calculation not loaded. Using Z - number of valence electrons.")
         self.Zion_loaded=False
     else:
         self.Zion_loaded=True
