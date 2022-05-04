@@ -72,7 +72,7 @@ def load_Fn(self,datadir,filename):
         partial_dos_path_2 = datadir + self.target+'/'+ filename[1]
         partial_fn_path_2 = datadir + self.target+'/'+ filename[1].replace('_pDoS','_Fn')
 
-        if (not (os.path.exists(partial_dos_path_1) and os.path.exists(partial_dos_path_2))) and self.phonon_DoS_loaded:
+        if (not (os.path.exists(partial_fn_path_1) and os.path.exists(partial_fn_path_2))) and self.phonon_DoS_loaded:
             print("Warning! Fn(omega) functions not loaded. Need to calculate Fn(omega) from density of states")
             print("Use the function 'create_Fn_omega' to produce these files")
             self.phonon_Fn_loaded=False
