@@ -74,7 +74,7 @@ def create_Fn_omega(self, datadir=None, dos_filename=None, phonons = 10,npoints=
 
             dos_path = datadir + self.target+'/'+ pdos
             fn_path = datadir + self.target+'/'+ pdos.replace('_pDoS','_Fn')
-
+            
             phonons = 10
 
             omegarange = np.linspace(self.dos_omega_range[0],
@@ -222,13 +222,12 @@ def load_phonon_dos(self,datadir,filename):
 
 def load_Fn(self,datadir,filename):
 
-
     if self.n_atoms == 2:
         partial_dos_path_1 = datadir + self.target+'/'+ filename[0]
         partial_fn_path_1 = datadir + self.target+'/'+ filename[0].replace('_pDoS','_Fn')
         partial_dos_path_2 = datadir + self.target+'/'+ filename[1]
         partial_fn_path_2 = datadir + self.target+'/'+ filename[1].replace('_pDoS','_Fn')
-
+        
         if (not (os.path.exists(partial_fn_path_1) and os.path.exists(partial_fn_path_2))) and self.phonon_DoS_loaded:
             print("Warning! Fn(omega) functions not loaded. Need to calculate Fn(omega) from density of states")
             print("Use the function 'create_Fn_omega' to produce these files")
