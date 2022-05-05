@@ -36,11 +36,11 @@ class darkelf(object):
             phonon_filename="ZnS_epsphonon_300K.dat"
           else:
             phonon_filename="none" # no default phonon_filename
-          if Zion_filename=="":
-            if target=="GaAs":
-              Zion_filename=target+"Ga_Zion.dat" # for now only using Ga in Migdal, needs to be generalized.
-            else:  
-              Zion_filename=target+"_Zion.dat"
+        if Zion_filename=="":
+          if target=="GaAs":
+            Zion_filename=target+"Ga_Zion.dat" # for now only using Ga in Migdal, needs to be generalized.
+          else:
+            Zion_filename=target+"_Zion.dat"
 
         # Useful units and constants
         self.eVtoK = 11604.5221
