@@ -221,7 +221,8 @@ def load_phonon_dos(self,datadir,filename):
 # Function to load Fn(omega) data corresponding to density of states file
 
 def load_Fn(self,datadir,filename):
-
+  
+  
     if self.n_atoms == 2:
         partial_dos_path_1 = datadir + self.target+'/'+ filename[0]
         partial_fn_path_1 = datadir + self.target+'/'+ filename[0].replace('_pDoS','_Fn')
