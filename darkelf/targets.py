@@ -10,15 +10,27 @@ def list_all(path=os.path.dirname(__file__)+"/../data/"):
 
 def files(target,path=os.path.dirname(__file__)+"/../data/"):
     """
-    List available config files and epsilon grids in data directory
+    List available config files, epsilon grids, and density of states files in data directory
 
     target: string
     """
-    
     print('Available configuration files: ')
     for file in glob.glob(path +str(target)+"/*yaml"):
             print('\t',file.split("/")[-1])
     print(" ")
     print('Available data for epsilon: ')
     for file in glob.glob(path +str(target)+"/*dat"):
+        if ('DoS' not in file) and ('pDoS' not in file) and ('Fn' not in file) and ('Zion' not in file):
+            print('\t',file.split("/")[-1])
+    print(" ")
+    print('Available data for phonon (partial) density of states: ')
+    for file in glob.glob(path +str(target)+"/*DoS.dat"):
+            print('\t',file.split("/")[-1])
+    print(" ")
+    print('Available data for Fn(omega) functions: ')
+    for file in glob.glob(path +str(target)+"/*Fn.dat"):
+            print('\t',file.split("/")[-1])
+    print(" ")
+    print('Available data for form factors: ')
+    for file in glob.glob(path +str(target)+"/*Zion.dat"):
             print('\t',file.split("/")[-1])

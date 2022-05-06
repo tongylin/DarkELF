@@ -7,5 +7,8 @@ e0 : 2.9  #for electron yield, epsilon in (5.2) of 1509.01598
 omegap : 16.
 Enl_list : [11000.,1400.,1200.,170.,120.,35.0,15.0,6.5]
 ombar : 0.02 # Averaged phonon energy, in eV
-mermin_ref: "M.Novák L.Kövér,S.Egri, I.Cserny, J.Tóth, D.Varga, W.Drube, A simple statistical model for quantitative analysis of plasmon structures in XPS and Auger spectra of free-electron-like materials, Journal of Electron Spectroscopy and Related Phenomena,Volume 163, Issues 1–3, April 2008, Pages 7-14"
-
+LOvec : [0.036] # eV, check this, it says 40 meV in the previous paper?!
+cLAkms : 5.3
+Avec : [72.]
+lattice_spacing: 5.66 # Angstroms
+atoms: ['Ge']

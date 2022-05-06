@@ -2,3 +2,7 @@ examples/data/*
 !examples/data/*txt
 examples/plots/*
 !examples/plots/*pdf
+darkelf/__pycache__
+examples/.*
+examples/darkelf_tester.ipynb
+*.DS_Store

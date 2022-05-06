@@ -9,4 +9,7 @@ LOvec: [0.10923861277724489, 0.06334128619667961] # eV; From M. Schubert, T. E. 
 TOvec: [0.07220584278909026, 0.04928197546130388]
 E_gap: 8.8
 Zion: 3.0
-mermin_ref: "Y. Sun, H. Xu, B. Da, S.-f. Mao and Z.-j. Ding, Calculations of Energy-Loss Function for 26 Materials, Chinese Journal of Chemical Physics 9 (2016) 663."
+atoms: ['Al','O']
+Avec: [27., 16.]
+cLAkms: 0. # sound speed is needed here to not break rest of code, but should update
+lattice_spacing : 1. # temp needed here to not break rest of code, but should update

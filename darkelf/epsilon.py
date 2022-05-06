@@ -1,3 +1,7 @@
+
+
+
+
 import numpy as np
 from numpy import linspace, sqrt, array, pi, cos, sin, dot, exp, sinh, log, log10, cosh, sinh
 from scipy.interpolate import interp1d, interp2d
@@ -9,32 +13,36 @@ import pandas as pd
 
 # Function to load eps data and set eps1_grid and eps2_grid in electron recoil regime
 def load_epsilon_grid(self,datadir,filename):
-    
+
     fname = datadir +str(self.target)+"/" + filename
-    
+
     if (not os.path.exists(fname)):
         self.electron_ELF_loaded=False
         print("Warning! Epsilon grid in electron regime does not exist.")
-        
+
         om = np.arange(10)
         k = np.arange(10)
         e1 = np.zeros((10,10))
         e2 = np.zeros((10,10))
-        
+
         self.kmin = 0.0
         self.kmax = 1.0e5
         self.ommax = 100.0
-        
+
         return om, k, e1, e2
     else:
         self.electron_ELF_loaded=True
         print("Loaded " + filename + " for epsilon in electron regime")
-    
-    data = pd.read_csv(fname, delim_whitespace=True,header=None,
+
+    with open(fname) as f:
+      citation = f.readline().replace("\n","")
+      print("electronic ELF taken or calculated from "+citation)
+
+    data = pd.read_csv(fname, delim_whitespace=True,header=None,skiprows=1,
                 names=['omega', 'k', 'eps1', 'eps2'])
-    
+
     data.fillna(inplace=True,method='bfill')# fill in some NaN values
-    
+
     # Reshapes to array in omega, k
     eps1df = data.pivot(index='omega', columns='k', values='eps1')
     eps1df.interpolate()  # Interpolates any NaNs that might be present
@@ -54,25 +62,51 @@ def load_epsilon_grid(self,datadir,filename):
     self.kmin = min(kall)
     self.kmax = max(kall)
     self.ommax = max(omall)
-    
-    return 
+
+    return
 
 def load_epsilon_phonon(self,datadir,filename):
 
     phonon_path = datadir + self.target+'/'+ filename
 
     if( not os.path.exists(phonon_path)):
-        print("Warning! eps for phonon frequencies not loaded. Need to set phonon_filename ")
+        print("Warning! eps for phonon frequencies not loaded. Need to set phonon_filename to perform data-driven, single phonon calculations")
         self.phonon_ELF_loaded=False
     else:
         self.phonon_ELF_loaded=True
-        phonondat = np.loadtxt(phonon_path).T
+
+        with open(phonon_path) as f:
+          citation = f.readline().replace("\n","")
+          print("phonon ELF taken or calculated from "+citation)
+
+        phonondat = np.loadtxt(phonon_path,skiprows=1).T
         print("Loaded " + filename + " for epsilon in phonon regime")
         self.eps1_phonon = interp1d(phonondat[0],phonondat[1],\
             fill_value=(phonondat[1][0],phonondat[1][-1]),bounds_error=False)
         self.eps2_phonon = interp1d(phonondat[0],phonondat[2],fill_value=0.0,bounds_error=False)
         self.omph_range = [ min(phonondat[0]), max(phonondat[0]) ]
-    
+
+    return
+
+
+def load_Zion(self,datadir):
+
+    Zion_path = datadir + self.target+'/'+ self.Zion_filename
+
+    if( not os.path.exists(Zion_path)):
+        print("Warning! Momentum dependent Zion for Migdal calculation not loaded. Using Z - number of valence electrons.")
+        self.Zion_loaded=False
+    else:
+        self.Zion_loaded=True
+
+        with open(Zion_path) as f:
+          citation = f.readline().replace("\n","")
+          print("Zion(k) for Migdal calculation taken or calculated from: "+citation)
+
+        Ziondat = np.loadtxt(Zion_path,skiprows=1).T
+        self.Zion_k = interp1d(Ziondat[0],Ziondat[1],\
+            fill_value=(Ziondat[1][0],Ziondat[1][-1]),bounds_error=False)
+
     return
 
 ############################################################################################
@@ -100,9 +134,9 @@ def eps2_electrongas(self,omega,k):
         elif(np.abs(z-u) < 1):
             foo = foo*np.pi/(8*z)*(1 - (z-u)**2 )
     return foo
-    
+
 ############################################################################################
-    
+
 def eps1(self,omega,k,method="grid"):
     """
     Real part of epsilon(omega,k)
@@ -115,22 +149,22 @@ def eps1(self,omega,k,method="grid"):
         energy in eV
     method = "grid" (using the grid loaded in filename), "Lindhard" (free electron gas), or "phonon"
     """
-    
+
     scalar_input = np.isscalar(omega)
     omega = np.atleast_1d(omega)
-    
+
     if method=="grid":
         # If k is smaller than grid kmin, we will extrapolate from lowest k point
         # This is implemented by changing all small k values to kmin
         k = k*(k >= self.kmin) + self.kmin*(k < self.kmin)
-        eps1=self.eps1_grid(omega,k) 
+        eps1=self.eps1_grid(omega,k)
     elif(method=="Lindhard"):
         eps1=[self.eps1_electrongas(om,k) for om in omega]
     elif(method=='phonon'):
       if(hasattr(self, "eps1_phonon")==False):
         print("Error, eps for phonon frequencies not loaded. Need to set phonon_filename.")
         return 0
-      else:  
+      else:
         eps1=[self.eps1_phonon(om) for om in omega]
     else:
         print("Error, unknown method. Please choose 'grid' or 'Lindhard'")
@@ -153,30 +187,30 @@ def eps2(self,omega,k,method="grid"):
     """
     scalar_input = np.isscalar(omega)
     omega = np.atleast_1d(omega)
-    
+
     if method=="grid":
         # If k is smaller than grid kmin, we will extrapolate from lowest k point
         # This is implemented by changing all small k values to kmin
         k = k*(k >= self.kmin) + self.kmin*(k < self.kmin)
-        eps2=self.eps2_grid(omega,k) 
+        eps2=self.eps2_grid(omega,k)
     elif(method=="Lindhard"):
         eps2=[self.eps2_electrongas(om,k) for om in omega]
     elif(method=='phonon'):
       if(hasattr(self, "eps2_phonon")==False):
         print("Error, eps for phonon frequencies not loaded. Need to set phonon_filename.")
         return 0
-      else:  
+      else:
         eps2=[self.eps2_phonon(om) for om in omega]
     else:
         print("Error, unknown method. Please choose 'grid' or 'Lindhard'")
-        
+
     if(scalar_input):
       return eps2[0]
     else:
-      return np.array(eps2)    
-        
+      return np.array(eps2)
 
-    
+
+
 # define function that returns the loss function Im(-1/eps)
 def elf(self,omega,k,method="grid"):
     """

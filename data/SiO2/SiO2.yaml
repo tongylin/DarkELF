@@ -7,7 +7,9 @@ E_gap: 9.2
 eps_0: 3.9
 eps_inf: 2.4
 ombar: 0.012 # average phonon frequency in eV
-mermin_ref: "Calculations of Energy-Loss Function for 26 Materials, Chinese Journal of Chemical Physics 29, 663 (2016); https://doi.org/10.1063/1674-0068/29/cjcp1605110, Yang Sun, Huan Xu, Bo Da, Shi-feng Mao, and Ze-jun Ding"
 LOvec: [0.04983988, 0.0632297,  0.08648832, 0.10042365, 0.15199925, 0.14319668]  # eV; From Gervais and Piriou PhysRevB.11.3944
 TOvec: [0.04878606, 0.05579092, 0.08616597, 0.09881191, 0.1320385,  0.14356862]
-mermin_ref: "Y. Sun, H. Xu, B. Da, S.-f. Mao and Z.-j. Ding, Calculations of Energy-Loss Function for 26 Materials, Chinese Journal of Chemical Physics 9 (2016) 663."
+atoms: ['Si','O']
+Avec: [28., 16.]
+cLAkms: 0. # sound speed is needed here to not break rest of code, but should update
+lattice_spacing : 1. # temp needed here to not break rest of code, but should update

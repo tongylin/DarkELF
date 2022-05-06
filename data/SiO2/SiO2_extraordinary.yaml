@@ -9,3 +9,7 @@ eps_inf: 2.4
 mermin_ref: "Calculations of Energy-Loss Function for 26 Materials, Chinese Journal of Chemical Physics 29, 663 (2016); https://doi.org/10.1063/1674-0068/29/cjcp1605110, Yang Sun, Huan Xu, Bo Da, Shi-feng Mao, and Ze-jun Ding"
 LOvec: [0.04794299, 0.06837487, 0.09794405, 0.15237119] # eV; From Gervais and Piriou PhysRevB.11.3944
 TOvec: [0.04506666, 0.06137001, 0.09633231, 0.13278238]
+atoms: ['Si','O']
+Avec: [28., 16.]
+cLAkms: 0. # sound speed is needed here to not break rest of code, but should update
+lattice_spacing : 1. # temp needed here to not break rest of code, but should update

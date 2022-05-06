@@ -6,4 +6,7 @@ Z : 13
 E_gap: 0.0
 Zion: 3.0
 ombar: 0.015 # average phonon frequency in eV
-mermin_ref: "Y. Sun, H. Xu, B. Da, S.-f. Mao and Z.-j. Ding, Calculations of Energy-Loss Function for 26 Materials, Chinese Journal of Chemical Physics 9 (2016) 663."
+Avec : [27.]
+lattice_spacing : 4.046
+cLAkms: 6.2 # need check for ref
+atoms: ['Al']

@@ -16,10 +16,10 @@ def dRdomegadk_phonon(self,omega,k,sigmae=1e-38):
 
     Inputs
     ------
-    omega: float 
+    omega: float
         electron excitation energy in [eV]
-    k: float 
-        momentum transfer in [eV]    
+    k: float
+        momentum transfer in [eV]
     sigmae: float
         cross section in [cm^2]
     """
@@ -42,14 +42,14 @@ def dRdomega_phonon(self,omega, sigmae=1e-38):
 
     Inputs
     ------
-    omega: float or list 
+    omega: float or list
         energy in eV
     sigmae: float
         DM-electron cross section in [cm^2]
     """
     assert self.phonon_ELF_loaded == True, "Phonon ELF data is not loaded!"
 
-    # integrate over k... 
+    # integrate over k...
     scalar_input = np.isscalar(omega)
     omega = np.atleast_1d(omega)
     dRdomega = np.zeros_like(omega)
@@ -61,7 +61,7 @@ def dRdomega_phonon(self,omega, sigmae=1e-38):
         dRdomega[i] = integrate.quad(lambda x: self.dRdomegadk_phonon(omega[i],x,sigmae,)\
                                      /self.eVtoInvYr, kmin, kmax, limit=50)[0] * \
                     self.eVtoInvYr
-    
+
     if(scalar_input):
         return dRdomega[0]
     else:
@@ -69,7 +69,7 @@ def dRdomega_phonon(self,omega, sigmae=1e-38):
 
 def R_phonon(self,threshold=-1.0,sigmae=1e-38):
     """
-    Returns phonon excitation rate in 1/kg/yr by numerically integrating Im(-1/eps(omega)), 
+    Returns phonon excitation rate in 1/kg/yr by numerically integrating Im(-1/eps(omega)),
     where eps(omega) is obtained by interpolating data specified in phonon_filename
 
     It should only be used in massless mediator limit, which is enforced here no matter what mMed is
@@ -91,7 +91,7 @@ def R_phonon(self,threshold=-1.0,sigmae=1e-38):
     else:
         # Integrate from threshold up to maximum energy of phonon eps data file
         olist=np.linspace(threshold,self.omph_range[1],200)
-    
+
     return integrate.trapz(self.dRdomega_phonon(olist,sigmae=sigmae),x=olist)
 
 
@@ -141,7 +141,7 @@ def _R_phonon_Frohlich_branch(self,omegaLO,omegaTO,rho=0,eps_inf=0):
 
     if(rho == 0):
         rho = self.rhoT  # gram/cm^3
-    rhokg =  rho*1e-3 
+    rhokg =  rho*1e-3
 
     fac = self.eVtoInvYr*self.rhoX/self.mX/rhokg/(2*np.pi)
     # Multiply by Qx^2/sigmae where sigmae is in cm^2
@@ -154,10 +154,10 @@ def _R_phonon_Frohlich_branch(self,omegaLO,omegaTO,rho=0,eps_inf=0):
 
     for i in range(len(vv)):
         vi = vv[i]
-        ki = self.mX*vi 
+        ki = self.mX*vi
         kf = self.mX*np.sqrt(abs(vi**2 - 2*omegaLO/self.mX))
         Qmin = abs(ki-kf)
-        Qmax = ki + kf          
+        Qmax = ki + kf
         if(Qmin > Qmax or vi**2  < 2*omegaLO/self.mX):
             continue
         vint[i] = self.fv_1d(vi)/(vi)*np.log(Qmax/Qmin)*CFrohsq

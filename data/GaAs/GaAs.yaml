@@ -11,3 +11,8 @@ e0 : 4.7  #for electron yield, epsilon in (5.2) of 1509.01598. taken from Citati
 omegap : 16.0
 ombar: 0.018 # average phonon frequency in eV
 mermin_ref: "Y. Tu, C. Kwei and C. Tung, Angular and energy dependences of the surface excitation parameter for semiconducting iii–v compounds, Surface Science 601 (2007) 865."
+lattice_spacing: 5.65 # Angstroms
+cLAkms: 5.2 # km/s
+cTAkms: 3.1 # km/s
+atoms: ['Ga', 'As'] # names of atoms
+Avec: [69, 75] # Atomic masses
