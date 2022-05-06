@@ -23,7 +23,7 @@ DarkELF can compute the rate for ionizations through the Migdal effect, as deriv
 
 ### DM - phonon scattering
 
-DM - phonon scattering through a light dark photon mediator (arXiv [1712.06598](https://arxiv.org/abs/1712.06598), [1807.10291](https://arxiv.org/abs/1807.10291)) can also be computed in terms of the ELF. DarkELF can also calculate the rate for multiphonon production in dark matter scattering, as described in arXiv [2205.02250](https://arxiv.org/abs/2205.02250)
+DM - phonon scattering through a light dark photon mediator (arXiv [1712.06598](https://arxiv.org/abs/1712.06598), [1807.10291](https://arxiv.org/abs/1807.10291)) can also be computed in terms of the ELF. DarkELF can also calculate the rate for multiphonon production in dark matter scattering, as described in arXiv [2205.02250](https://arxiv.org/abs/2205.02250).
 
 ### DM - Absorption
 
