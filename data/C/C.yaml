@@ -13,3 +13,4 @@ cTAkms: 12.2 # km/s
 LOvec: [0.140]  # eV
 Avec: [12., 12.]
 atoms: ['C']
+unitcell: {'C':{'A': 12., 'mult':2}}

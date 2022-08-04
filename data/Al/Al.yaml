@@ -10,3 +10,4 @@ Avec : [27.]
 lattice_spacing : 4.046
 cLAkms: 6.2 # need check for ref
 atoms: ['Al']
+unitcell: {'Al':{'A': 27., 'mult':1}}

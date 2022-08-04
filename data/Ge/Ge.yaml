@@ -12,3 +12,4 @@ cLAkms : 5.3
 Avec : [72.]
 lattice_spacing: 5.66 # Angstroms
 atoms: ['Ge']
+unitcell: {'Ge':{'A': 72., 'mult':2}}
