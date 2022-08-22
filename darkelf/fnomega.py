@@ -42,7 +42,7 @@ def create_Fn_omega(self, datadir=None, dos_filename=None, phonons = 10,npoints=
     for atom, pdos in enumerate(dos_filename):
         dos_path = datadir + self.target+'/'+ pdos
         fn_path = datadir + self.target+'/'+ pdos.replace('_pDoS','_Fn')
-        
+
         # max number of phonons in Fn function
         phonons = 10
         # omega range in Fn function (determined by DoS range)
@@ -138,15 +138,16 @@ def load_phonon_dos(self,datadir,filename):
 
     for file in dos_paths:
 
-        assert os.path.exists(file), f"{file} does not exist!"
+        if not: os.path.exists(file):
+            print(f"Warning, {file} does not exist! Density of states not loaded. Need to set dos_filename for all atoms.")
+        else:
+            (self.phonon_DoS).append(np.loadtxt(file).T)
+            print("Loaded " + file + " for partial densities of states")
 
-        (self.phonon_DoS).append(np.loadtxt(file).T)
-        print("Loaded " + file + " for partial densities of states")
-    
     self.DoS_interp = np.array([interp1d(i[0],i[1],kind='linear', fill_value = 0, bounds_error=False) for i in self.phonon_DoS])
     self.dos_omega_range = np.array([ self.phonon_DoS[0][0][0], self.phonon_DoS[0][0][-1] ])
     # Assuming same omega range for all pDOS!
-    
+
     self.omega_bar = np.array([np.trapz(i[1]*i[0], x=i[0]) for i in self.phonon_DoS])
     self.omega_inverse_bar = np.array([np.trapz([i[1][j]/i[0][j] if i[0][j] != 0 else 0 for j in range(len(i[0]))],
                                             x=i[0]) for i in self.phonon_DoS])
@@ -157,16 +158,18 @@ def load_phonon_dos(self,datadir,filename):
 
 # Function to load Fn(omega) data corresponding to density of states file
 def load_Fn(self,datadir,filename):
-  
+
     Fn_paths = [datadir + self.target+'/'+ fi.replace('_pDoS','_Fn') for fi in filename]
 
     self.phonon_Fn = []
     for file in Fn_paths:
 
-        assert os.path.exists(file), f"{file} does not exist! Need to calculate Fn(omega from DoS. Use the function 'create_Fn_omega' to produce these files "
+        if not os.path.exists(file):
+            print(f"Warning! {file} does not exist! Need to calculate Fn(omega) from DoS. Use the function 'create_Fn_omega' to produce these files ")
 
-        (self.phonon_Fn).append(np.loadtxt(file).T)
-        print("Loaded " + file + " for Fn(omega)")
+        else:
+            (self.phonon_Fn).append(np.loadtxt(file).T)
+            print("Loaded " + file + " for Fn(omega)")
 
     # dictionary for Fn functions in terms of number of phonons (offset from index by 1)
     self.Fn_interpolations = {}
@@ -175,5 +178,5 @@ def load_Fn(self,datadir,filename):
         for n in range(1, len(Fn)):
             tempdict[n] = interp1d(Fn[0], Fn[n], fill_value=0, bounds_error=False)
         self.Fn_interpolations[i] = tempdict
-  
+
     return

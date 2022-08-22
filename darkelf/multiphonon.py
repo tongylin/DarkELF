@@ -195,7 +195,7 @@ def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=Fal
         deltaq = sqrt(np.tile(self.omega_bar/(2*self.Avec*self.mp), (npoints, 1)).T)*qtile
 
         # This is structure factor divided by (2 pi/ Omega_c)
-        structurefactor = (1/(deltaq*sqrt(2*pi)))*exp(-(omega - 
+        structurefactor = (1/(deltaq*sqrt(2*pi)))*exp(-(omega -
                        qtile**2 * np.tile(1/(2*self.Avec*self.mp), (npoints, 1)).T )**2/(2*deltaq**2))
 
         # Sum over all atoms with multiplicity factor
@@ -251,7 +251,7 @@ def _dR_domega_coherent_single(self, omega, sigman=1e-38, dark_photon=False):
 
     def dR_domega_dq_optical(q):
 
-        # This function only works if we have two atoms in the unit cell, so let's check the two 
+        # This function only works if we have two atoms in the unit cell, so let's check the two
         #   cases where that holds and assign the couplings appropriately.
         if( list(self.Amult) == [2]):
             Aoptical = np.array([self.Avec[0], self.Avec[0]])
@@ -357,7 +357,7 @@ def _R_single_acoustic(self, threshold, sigman=1e-38, dark_photon=False):
 
     if omegamax < omegamin:
         return 0
-    
+
     npoints = 100
     omegarange = np.linspace(omegamin, omegamax, npoints)
     dR_domega_acoustic = np.zeros(npoints)
@@ -390,9 +390,13 @@ def load_fd_darkphoton(self,datadir,filename):
     self.fd_darkphoton = []
 
     for file in fd_paths:
-        assert os.path.exists(file), f"{file} does not exist!"
-        fd = np.loadtxt(file).T
-        (self.fd_darkphoton).append( interp1d(fd[0],fd[1],kind='linear', fill_value = (fd[1][0], fd[1][-1]),bounds_error=False) )
-    
+        if not os.path.exists(file):
+            print(f"Warning, {file} does not exist! Must load in effective charges for each atom if dark photon calculations are desired.")
+            self.fd_loaded=False
+        else:
+            self.fd_loaded=True
+            fd = np.loadtxt(file).T
+            (self.fd_darkphoton).append( interp1d(fd[0],fd[1],kind='linear', fill_value = (fd[1][0], fd[1][-1]),bounds_error=False) )
+
     self.fd_loaded=True
     return
