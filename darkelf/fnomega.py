@@ -138,7 +138,7 @@ def load_phonon_dos(self,datadir,filename):
 
     for file in dos_paths:
 
-        if not: os.path.exists(file):
+        if not os.path.exists(file):
             print(f"Warning, {file} does not exist! Density of states not loaded. Need to set dos_filename for all atoms.")
         else:
             (self.phonon_DoS).append(np.loadtxt(file).T)
