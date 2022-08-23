@@ -278,8 +278,8 @@ def _dR_domega_coherent_single(self, omega, sigman=1e-38, dark_photon=False):
         width = 0.5e-3 # giving the delta functions finite width of 0.5 meV
 
         optical_factor1 = ((self.lattice_spacing/self.eVtoA0)**2/(2*self.LOvec[0]*self.mp))
-        optical_factor2 = (fd[0]**2*self.Avec[1]/self.Avec[0] + fd[1]**2*self.Avec[0]/self.Avec[1] - 2*fd[0]*fd[1] +
-                                fd[0]*fd[1]*q**2/16)/(np.sum(self.Avec))
+        optical_factor2 = (fd[0]**2*Aoptical[1]/Aoptical[0] + fd[1]**2*Aoptical[0]/Aoptical[1] - 2*fd[0]*fd[1] +
+                                fd[0]*fd[1]*q**2/16)/(np.sum(Aoptical))
         optical_part = q**3*optical_factor1*optical_factor2*(1/(width*sqrt(2*pi)))*exp(-(1/2)*(omega - self.LOvec[0])**2/(width)**2)
         return formfactorsquared*self.etav(q/(2*self.mX) + omega/q)*(optical_part)
 
@@ -334,8 +334,8 @@ def _R_single_optical(self, threshold, sigman=1e-38, dark_photon=False):
 
 
     optical_factor1 = ((self.lattice_spacing/self.eVtoA0)**2/(2*self.LOvec[0]*self.mp))
-    optical_factor2 = (fd[0]**2*self.Avec[1]/self.Avec[0] + fd[1]**2*self.Avec[0]/self.Avec[1] - 2*fd[0]*fd[1] +
-                                    fd[0]*fd[1]*qrange**2/16)/(np.sum(self.Avec))
+    optical_factor2 = (fd[0]**2*Aoptical[1]/Aoptical[0] + fd[1]**2*Aoptical[0]/Aoptical[1] - 2*fd[0]*fd[1] +
+                                    fd[0]*fd[1]*qrange**2/16)/(np.sum(Aoptical))
 
     optical_part = qrange**3*optical_factor1*optical_factor2
 
