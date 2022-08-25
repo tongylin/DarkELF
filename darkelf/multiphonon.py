@@ -58,7 +58,7 @@ def _R_multiphonons_prefactor(self, sigman):
 
 
 
-def sigma_multiphonons(self, threshold, dark_photon=False):
+def sigma_multiphonons(self, threshold, old=False, dark_photon=False):
     '''
     returns DM-proton cross-section [cm^2] corresponding to 3 events/kg/yr
     Inputs
@@ -71,14 +71,14 @@ def sigma_multiphonons(self, threshold, dark_photon=False):
     if dark_photon:
       assert self.fd_loaded, "Error: effective charge not loaded. Cannot perform calculation for dark photon mediator."
 
-    rate = self.R_multiphonons_no_single(threshold, dark_photon=dark_photon) + self.R_single_phonon(threshold, dark_photon=dark_photon)
+    rate = self.R_multiphonons_no_single(threshold, old=old, dark_photon=dark_photon) + self.R_single_phonon(threshold, dark_photon=dark_photon)
     if rate != 0:
         return (3.0*1e-38)/rate
     else:
         return float('inf')
 
 
-def R_multiphonons_no_single(self, threshold, sigman=1e-38, dark_photon=False):
+def R_multiphonons_no_single(self, threshold, old=False, sigman=1e-38, dark_photon=False):
     """
     Returns rate for DM scattering with a harmonic lattice, including multiphonon contributions but excluding the coherent single phonon contribution
 
@@ -105,14 +105,14 @@ def R_multiphonons_no_single(self, threshold, sigman=1e-38, dark_photon=False):
         # For better precision, we use linear sampling for omega < max phonon energy and log sampling for omega > max phonon energy.
         if(threshold<self.dos_omega_range[-1]):
             omegarange_linear=np.linspace(threshold,np.min([self.dos_omega_range[-1],self.omegaDMmax]), npoints)
-            dR_linear=[self._dR_domega_multiphonons_no_single(omega, sigman=sigman, dark_photon=dark_photon) for omega in omegarange_linear]
+            dR_linear=[self._dR_domega_multiphonons_no_single(omega, old=old, sigman=sigman, dark_photon=dark_photon) for omega in omegarange_linear]
             R_linear=np.trapz(dR_linear, omegarange_linear)
         else:
             R_linear=0.0
         if(self.omegaDMmax>self.dos_omega_range[-1]):
             omegarange_log=np.logspace(np.max([np.log10(self.dos_omega_range[-1]),np.log10(threshold)]),\
                                      np.log10(self.omegaDMmax), npoints)
-            dR_log=[self._dR_domega_multiphonons_no_single(omega, sigman=sigman, dark_photon=dark_photon) for omega in omegarange_log]
+            dR_log=[self._dR_domega_multiphonons_no_single(omega, old=old, sigman=sigman, dark_photon=dark_photon) for omega in omegarange_log]
             R_log=np.trapz(dR_log, omegarange_log)
         else:
             R_log=0
@@ -123,7 +123,7 @@ def R_multiphonons_no_single(self, threshold, sigman=1e-38, dark_photon=False):
 
 # Multiphonon_expansion term
 
-def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=False):
+def _dR_domega_multiphonons_no_single(self, omega, old=False, sigman=1e-38, dark_photon=False):
 
     '''dR_domega single-phonon coherent removed'''
     if(dark_photon): # check if effective charges are loaded
@@ -146,7 +146,10 @@ def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=Fal
     qmax = min(self.qmax(omega), q_IA_cut)
 
     if qmin >= qmax:
-        multiph_expansion_part = 0
+        if old==True:
+            return 0
+        else:
+            multiph_expansion_part = 0
     else:
         npoints = 100
         qrange = np.linspace(qmin, qmax, npoints)
@@ -238,7 +241,7 @@ def _dR_domega_coherent_single(self, omega, sigman=1e-38, dark_photon=False):
 
     formfactorsquared = self.Fmed_nucleus(omega/self.cLA)**2
 
-    if (omega < 2*self.mX*self.cLA*(self.vmax - self.cLA)) and (omega < self.cLA*self.qBZ) and (omega < self.LOvec[0]):
+    if (omega < 2*self.mX*self.cLA*(self.vmax - self.cLA)) and (omega < self.cLA*self.qBZ) and (omega < self.dos_omega_range[-1]):
         # !TL: multiplicity of atoms added here in sum over fd, and in 1/(total mass)
         acoustic_part = ((np.sum(fd*self.Amult)**2/np.sum(self.Amult*self.Avec))*(1/(2*self.mp))*((omega/self.cLA)**2/self.cLA**2)*
                         formfactorsquared*
@@ -298,6 +301,11 @@ def _R_single_optical(self, threshold, sigman=1e-38, dark_photon=False):
     ###############################
     # Optical part (only applies if two atoms in the unit cell)
 
+    if not hasattr(self, 'LOvec'):
+        return 0
+
+    # Returns 0 if LOvec not specified
+
     if(dark_photon): # check if effective charges are loaded
         assert self.fd_loaded, "Error: effective charge not loaded. Cannot perform calculation for dark photon mediator."
 
@@ -353,7 +361,7 @@ def _R_single_acoustic(self, threshold, sigman=1e-38, dark_photon=False):
     # Acoustic part
 
     omegamin = threshold
-    omegamax = min(2*self.mX*self.cLA*(self.vmax - self.cLA), self.cLA*self.qBZ, self.mX*self.vmax**2/2, self.LOvec[0])
+    omegamax = min(2*self.mX*self.cLA*(self.vmax - self.cLA), self.cLA*self.qBZ, self.mX*self.vmax**2/2, self.omega1ph_max)
 
     if omegamax < omegamin:
         return 0

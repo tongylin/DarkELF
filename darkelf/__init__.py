@@ -167,6 +167,14 @@ class darkelf(object):
         else:
             self.qchar = 0
 
+        # Set single-coherent phonon bounding box: if LOvec exists, set to LOvec
+        # If not, set to edge of single-ph density of states
+
+        if hasattr(self, 'LOvec'):
+            self.omega1ph_max = max(self.LOvec)
+        else:
+            self.omega1ph_max = self.dos_omega_range[-1]
+
 
 
 
