@@ -12,5 +12,6 @@ Zion: 3.0
 ombar: 0.022 # average phonon frequency in eV
 atoms: ['Al','O']
 Avec: [27., 16.]
-cLAkms: 0. # sound speed is needed here to not break rest of code, but should update
-lattice_spacing :  1. # temp needed here to not break rest of code, but should update
+cLAkms: 11. # Approx, need to check for source, also direction dependent since non-isotropic
+lattice_spacing :  13.11 # This is used to calculate qBZ in isotropic limit, I just took it to be the larger spacing.
+unitcell: {'Al':{'A': 27., 'mult':2}, 'O':{'A': 16., 'mult':3}}

@@ -11,5 +11,6 @@ LOvec: [0.04983988, 0.0632297,  0.08648832, 0.10042365, 0.15199925, 0.14319668] 
 TOvec: [0.04878606, 0.05579092, 0.08616597, 0.09881191, 0.1320385,  0.14356862]
 atoms: ['Si','O']
 Avec: [28., 16.]
-cLAkms: 0. # sound speed is needed here to not break rest of code, but should update
-lattice_spacing : 1. # temp needed here to not break rest of code, but should update
+cLAkms: 5.8 # Approx, need to check for source, also direction dependent since non-isotropic
+lattice_spacing : 5.14 # Approx, need to check for source
+unitcell: {'Si':{'A': 28., 'mult':1}, 'O':{'A': 16., 'mult':2}}
