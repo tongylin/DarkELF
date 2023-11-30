@@ -159,10 +159,11 @@ class darkelf(object):
         self.tabulate_I()
 
         # Set parameters that depend on DM properties
-        self.update_params(mX=mX,delta=delta,setdelta=True,mMed=mMed,vesckms=vesckms,v0kms=v0kms,vekms=vekms)
+        self.update_params(mX=mX,delta=delta,setdelta=True,mMed=mMed,vesckms=vesckms,v0kms=v0kms,vekms=vekms,q0=q0)
 
         # Characteristic momenta where many phonons become important (take maximum if two distinct atoms)
         if hasattr(self, 'omega_bar'):
+
             self.qchar = max([2*self.Avec[i]*self.mp*self.omega_bar[i] for i in range(len(self.atoms))] )
         else:
             self.qchar = 0
@@ -248,7 +249,7 @@ class darkelf(object):
         mediator: string 'massive' or 'massless'
             Specifies whether the massive or massless mediator limit is used. This flag is not used if the mediator mass is specified explicitly with the "mMed" flag
         q0: float
-            choice of reference momentum to define the cross section in the case of a massless mediator. The default is q0=v0*mX.
+            choice of reference momentum to define the NR mediator form factor. Default is mX*v0 if not specified
         """
 
         if(mX > 0):
@@ -279,9 +280,11 @@ class darkelf(object):
 
         self.muXe = mX*self.me/(mX + self.me)
 
-        # reference momentum for massless mediator, nuclear coupling
+        # reference momentum used in mediator form factor for nuclear recoils
         if(q0==0.0):
-          self.q0=self.mX*self.v0
+            self.q0=self.mX*self.v0
+        else:
+            self.q0 = q0
 
         # Set massless or massive limit for mediator
         if(mediator == "massive"):
