@@ -186,6 +186,7 @@ class darkelf(object):
 
     from .fnomega import Fn_integrand, Fn_vegas, load_phonon_dos, load_Fn
     from .fnomega import create_Fn_omega
+    from .fnomega import C_ld
 
     from .multiphonon import sigma_multiphonons, R_multiphonons_no_single, R_single_phonon
     from .multiphonon import _R_single_optical, _R_single_acoustic, _dR_domega_coherent_single

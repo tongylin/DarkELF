@@ -123,7 +123,7 @@ def R_multiphonons_no_single(self, threshold, sigman=1e-38, dark_photon=False):
 
 # Multiphonon_expansion term
 
-def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=False):
+def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=False, npoints=200):
 
     '''dR_domega single-phonon coherent removed'''
     if(dark_photon): # check if effective charges are loaded
@@ -132,81 +132,38 @@ def _dR_domega_multiphonons_no_single(self, omega, sigman=1e-38, dark_photon=Fal
     if omega > self.omegaDMmax:
         return 0
 
-    ###################################################
-    # Contribution to the rate from phase space where we use multiphonon expansion with incoherent approximation
-
     if (omega > self.dos_omega_range[-1]):
         qmin = self.qmin(omega)
     else: ## For q<qBZ and omega<max phonon energy, we use the single phonon rate.
         qmin = max(self.qmin(omega), self.qBZ)
 
-    # for q>q_IA_cut, the impulse approximation is used
-    q_IA_cut = max([ 2 * sqrt(2*self.Avec[i]*self.mp*self.omega_bar[i]) for i in range(len(self.atoms))])
-
-    qmax = min(self.qmax(omega), q_IA_cut)
-
-    if qmin >= qmax:
-        multiph_expansion_part = 0
-    else:
-        npoints = 100
-        qrange = np.linspace(qmin, qmax, npoints)
-
-        # Choice of effective coupling
-        if dark_photon:
-            fd = np.array([self.fd_darkphoton[i](qrange) for i in range(len(self.atoms))])*sqrt(self.debye_waller(qrange)).T
-        else:
-            fd = np.tile(self.Avec,(npoints, 1)).T*sqrt(self.debye_waller(qrange)).T
-
-        formfactorsquared = self.Fmed_nucleus(qrange)**2
-
-        otherpart = np.array([np.zeros(npoints) for i in range(len(self.atoms))])
-        for i in range(len(self.atoms)):
-            for n in range(1, len(self.phonon_Fn[i])):
-                # Debye-Waller included in f_d
-                qpart = qrange**(2*n + 1)
-                # !TL - included multiplicity factor here!
-                otherpart[i] += self.Amult[i] * (1/(2*self.Avec[i]*self.mp))**n * qpart * self.Fn_interpolations[i][n](omega)
-
-        # add contributions from all atoms
-        dR_domega_dq = np.sum(fd**2*otherpart, axis = 0)*formfactorsquared*self.etav((qrange/(2*self.mX)) + omega/qrange)
-        multiph_expansion_part = np.trapz(dR_domega_dq, qrange)
-
-    ###################################################
-    # Contribution to the rate from phase space where we use the Impulse Approximation
-    qmin = max(self.qmin(omega), q_IA_cut)
     qmax = self.qmax(omega)
 
     if qmin >= qmax:
-        impulse_approx_part = 0
+        return 0
+    
+    qrange = np.linspace(qmin, qmax, npoints)
+
+    # Choice of effective coupling
+    if dark_photon:
+        fd = np.array([self.fd_darkphoton[i](qrange) for i in range(len(self.atoms))])
     else:
-        npoints = 100
-        qrange = np.linspace(qmin, qmax, npoints)
+        fd = np.tile(self.Avec,(npoints, 1)).T
 
-        # Choice of effective coupling
-        if dark_photon:
-            fd = np.array([self.fd_darkphoton[i](qrange) for i in range(len(self.atoms))])
-        else:
-            fd = np.tile(self.Avec, (npoints, 1)).T
+    formfactorsquared = self.Fmed_nucleus(qrange)**2
 
-        formfactorsquared = self.Fmed_nucleus(qrange)**2
+    S = 0
+    for d in range(len(self.atoms)):
+        # This is structure factor divided by (2 pi/ omega_c)
+        S += self.Amult[d] * fd[d]**2 * self.C_ld(qrange, omega, d)
 
-        # Width of gaussian
-        qtile = np.tile(qrange, (len(self.atoms), 1))
-        deltaq = sqrt(np.tile(self.omega_bar/(2*self.Avec*self.mp), (npoints, 1)).T)*qtile
+    # add contributions from all atoms
+    dR_domega_dq = S * qrange * formfactorsquared * self.etav((qrange/(2*self.mX)) + omega/qrange)
 
-        # This is structure factor divided by (2 pi/ Omega_c)
-        structurefactor = (1/(deltaq*sqrt(2*pi)))*exp(-(omega -
-                       qtile**2 * np.tile(1/(2*self.Avec*self.mp), (npoints, 1)).T )**2/(2*deltaq**2))
-
-        # Sum over all atoms with multiplicity factor
-        dR_domega_dq = np.sum( np.tile(self.Amult, (npoints, 1)).T * structurefactor * fd**2, axis=0) * \
-                     formfactorsquared*self.etav((qrange/(2*self.mX)) + omega/qrange) * qrange
-
-        impulse_approx_part = np.trapz(dR_domega_dq, qrange)
-
-    return self._R_multiphonons_prefactor(sigman)*(multiph_expansion_part + impulse_approx_part)
-
-
+    dR_domega = np.trapz(dR_domega_dq, qrange)
+    
+    return self._R_multiphonons_prefactor(sigman) * dR_domega
+ 
 ############################################################################################
 #
 # Single phonon coherent term

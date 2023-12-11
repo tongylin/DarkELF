@@ -10,6 +10,59 @@ import time
 import sys, os, glob
 import pandas as pd
 
+
+##############################################################################
+# Calculates the C_ld's using both multiphonon expansion and impulse approximation. Uses the Fn(omega) files. The function checks whether the qrange is physical, but does not check if single phonon analysis should be used instead of the multiphonon expansion. 
+
+def C_ld(self, qrange, omega, d):
+    if omega > self.omegaDMmax:
+        return 0
+
+    qmin = self.qmin(omega)     
+    qmax = self.qmax(omega)
+    
+    assert qrange[0] >= qmin and qrange[-1] <= qmax, "the range of q's is unphysical"
+        
+
+    # for q>q_IA_cut, the impulse approximation is used
+    q_IA_cut = max([ 2 * sqrt(2*self.Avec[i]*self.mp*self.omega_bar[i]) for i in range(len(self.atoms))])
+    if q_IA_cut >= qrange[-1]:
+        q_IA_cut_index = len(qrange)
+    else:
+        q_IA_cut_index = next(x for x, val in enumerate(qrange)if val > q_IA_cut)
+
+
+    q_multiphonon = qrange[0:q_IA_cut_index]
+    q_IA = qrange[q_IA_cut_index::]
+
+    # Calculation of the c_ld's via multiphonon expansion
+    if q_multiphonon.size == 0:
+        cld_multiphonon = np.empty(0)
+    else:
+        cld_multiphonon=np.zeros(len(q_multiphonon))
+        for n in range(1, len(self.phonon_Fn[d])):
+            # Debye-Waller now included in qpart
+            qpart = q_multiphonon**(2*n) * self.debye_waller(q_multiphonon).T[d] #deleted a q here since it's not in the Clds
+            # deleted the multiplicity function from here, must replace elsewhere.  This is c_ld divided by (2 pi/ V)
+            cld_multiphonon += (1/(2*self.Avec[d]*self.mp))**n * qpart * self.Fn_interpolations[d][n](omega) #the 1/n! is found in the Fn function
+
+
+    # calculation of the c_ld's via the impulse approximation
+    if q_IA.size == 0:
+        cld_IA = np.empty(0)
+    else:
+        # Width of gaussian
+        deltaq = sqrt(self.omega_bar[d] / (2* self.Avec[d] * self.mp)) * q_IA
+
+        # This is c_ld divided by (2 pi/ V)
+        cld_IA = (1/(deltaq*sqrt(2*pi)))*exp(-(omega - q_IA**2/(2*self.Avec[d]*self.mp))**2/(2*deltaq**2))
+
+    cld = np.concatenate((cld_multiphonon, cld_IA))
+    return cld
+
+
+
+
 ##############################################################################
 # Makes Fn(omega) files from an input DoS file
 
