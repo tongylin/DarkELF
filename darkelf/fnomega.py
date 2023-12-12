@@ -4,8 +4,8 @@ from math import factorial
 from scipy.special import erf, erfc, gamma, gammaincc, exp1
 from scipy.interpolate import interp1d, interp2d
 from scipy import integrate
-import vegas
-import gvar
+#import vegas
+#import gvar
 import time
 import sys, os, glob
 import pandas as pd
@@ -89,9 +89,77 @@ def C_ld(self, qrange, omega, d, q_IA_factor = 2):
 ##############################################################################
 # Makes Fn(omega) files from an input DoS file
 
+#Calculate Tn and Fn for given DOS data  
+def create_Fn_omega(self,datadir=None, dos_filename=None, phonons = 10, npoints=1000):
+    """
+    Function to create an array of Fn values for a given material.
+
+    Uses recursive relation on Tn = n! * Fn and then divides by n! at the end for Fn
+
+    Inputs
+    ------
+    datadir: string
+        directory with DoS file, default is self.eps_data_dir with all the other data
+    dos_filename: list of strings
+        DoS filename(s), default is self.dos_filename which is set when the class is instantiated
+    phonons: int
+        specifies up to how many phonons Fn is calculated for. Default value is 10.
+    npoints: int
+        number of omega points to compute Fn grid, default is 250
+        (750 were used for calculations in draft, takes ~four hours)
+    
+    """
+
+    if(datadir == None):
+        datadir = self.eps_data_dir
+    if(dos_filename == None):
+        dos_filename = self.dos_filename
+
+    # omega range for Fn files (determined by DoS range) - this could be expanded as needed.
+    omegarange = np.linspace(self.dos_omega_range[0],
+                                (phonons/2)*self.dos_omega_range[1], npoints)
+    
+    # omega array for each atom
+    omega_d = [self.phonon_DoS[i][0] for i in range(len(self.atoms)) ]
+    # Extract D(omega_n)/omega_n from DoS data
+    T1_d =  [self.phonon_DoS[i][1]/self.phonon_DoS[i][0] for i in range(len(self.atoms)) ]
+
+    # Interpolated T1 function 
+    T1_d_interp = [interp1d(DoS[0],DoS[1]/DoS[0],fill_value=0,bounds_error=False) for DoS in self.phonon_DoS]
+
+    for atom, pdos in enumerate(dos_filename):
+        fn_path = datadir + self.target+'/'+ pdos.replace('_pDoS','_Fn')
+
+        # Create array that stores each T1 or F1 function over the entire omega range of interest
+        # Add list of F2, F3,... up to FN to this array and return it
+        Tn_array = np.array([T1_d_interp[atom](omegarange)])
+        Fn_array = np.array([Tn_array[0]])
+
+        T_n_minus_1_interp = T1_d_interp[atom]
+
+        for n in range(1,phonons):
+            Tn_array = np.append(Tn_array, \
+                                  [ [np.trapz(T1_d[atom]*T_n_minus_1_interp(W-omega_d[atom]), omega_d[atom]) for W in omegarange] ], axis=0)
+            Fn_array = np.append(Fn_array, [Tn_array[-1]/factorial(n+1)],axis=0)
+
+            # Update the T_(n-1) function using the last computed integral
+            #print(omegarange)
+            #print(Tn_array)
+            #print(Tn_array[-1])
+            T_n_minus_1_interp = interp1d(omegarange, Tn_array[-1],fill_value=0,bounds_error=False,kind='linear')
+        
+        Fndata = np.append([omegarange],Fn_array,axis=0)
+        label = '# First column is omega in [eV], second column is F1(omega) in [eV-2], third column is F2(omega) in [eV-3], etc.'
+        np.savetxt(fn_path, Fndata.T,header=label)
+        print("result saved in "+fn_path)
+
+    self.load_Fn(datadir, dos_filename)
+    
+    return 
 
 
-def create_Fn_omega(self, datadir=None, dos_filename=None, phonons = 10, npoints=250):
+# Old functions using vegas to evaluate multiphonon integrals -- very slow.
+def create_Fn_omega_vegas(self, datadir=None, dos_filename=None, phonons = 10, npoints=250):
     """
     Function to create .dat files for Fn(omega), used in multiphonons calculation.
 
@@ -253,7 +321,7 @@ def load_Fn(self,datadir,filename):
     for i, Fn in enumerate(self.phonon_Fn):
         tempdict = {}
         for n in range(1, len(Fn)):
-            tempdict[n] = interp1d(Fn[0], Fn[n], fill_value=0, bounds_error=False)
+            tempdict[n] = interp1d(Fn[0], Fn[n], fill_value=0, bounds_error=False, kind='linear')
         self.Fn_interpolations[i] = tempdict
 
     return
