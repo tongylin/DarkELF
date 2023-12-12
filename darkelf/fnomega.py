@@ -157,6 +157,65 @@ def create_Fn_omega(self,datadir=None, dos_filename=None, phonons = 10, npoints=
     
     return 
 
+############################################################################################
+
+# Function to load density of states
+def load_phonon_dos(self,datadir,filename):
+
+    dos_paths = [datadir + self.target+'/'+ fi for fi in filename]
+    self.phonon_DoS = []
+
+    for file in dos_paths:
+
+        if not os.path.exists(file):
+            print(f"Warning, {file} does not exist! Density of states not loaded. Need to set dos_filename for all atoms.")
+        else:
+            (self.phonon_DoS).append(np.loadtxt(file).T)
+            print("Loaded " + file + " for partial densities of states")
+
+    self.DoS_interp = np.array([interp1d(i[0],i[1],kind='linear', fill_value = 0, bounds_error=False) for i in self.phonon_DoS])
+    self.dos_omega_range = np.array([ self.phonon_DoS[0][0][0], self.phonon_DoS[0][0][-1] ])
+    # Warning: assuming same omega range for all pDOS!
+
+    self.omega_bar = np.array([np.trapz(i[1]*i[0], x=i[0]) for i in self.phonon_DoS])
+    self.omega_inverse_bar = np.array([np.trapz([i[1][j]/i[0][j] if i[0][j] != 0 else 0 for j in range(len(i[0]))],
+                                            x=i[0]) for i in self.phonon_DoS])
+    # if else statement in second line so that there's no divide by 0 error at omega = 0
+
+    return
+
+
+# Function to load Fn(omega) data corresponding to density of states file
+def load_Fn(self,datadir,filename):
+
+    Fn_paths = [datadir + self.target+'/'+ fi.replace('_pDoS','_Fn') for fi in filename]
+
+    self.phonon_Fn = []
+    for file in Fn_paths:
+
+        if not os.path.exists(file):
+            print(f"Warning! {file} does not exist! Need to calculate Fn(omega) from DoS. Use the function 'create_Fn_omega' to produce these files ")
+
+        else:
+            (self.phonon_Fn).append(np.loadtxt(file).T)
+            print("Loaded " + file + " for Fn(omega)")
+
+    # dictionary for Fn functions in terms of number of phonons (offset from index by 1)
+    self.Fn_interpolations = {}
+    for i, Fn in enumerate(self.phonon_Fn):
+        tempdict = {}
+        for n in range(1, len(Fn)):
+            tempdict[n] = interp1d(Fn[0], Fn[n], fill_value=0, bounds_error=False, kind='linear')
+        self.Fn_interpolations[i] = tempdict
+
+    return
+
+
+
+
+
+############################################################################################
+
 
 # Old functions using vegas to evaluate multiphonon integrals -- very slow.
 def create_Fn_omega_vegas(self, datadir=None, dos_filename=None, phonons = 10, npoints=250):
@@ -269,59 +328,3 @@ def Fn_vegas(self, omega, n, atom):
             return self.DoS_interp[atom](omega)/omega
     else:
         raise Exception('n must be a nonnegative integer')
-
-
-
-
-############################################################################################
-
-# Function to load density of states
-def load_phonon_dos(self,datadir,filename):
-
-    dos_paths = [datadir + self.target+'/'+ fi for fi in filename]
-    self.phonon_DoS = []
-
-    for file in dos_paths:
-
-        if not os.path.exists(file):
-            print(f"Warning, {file} does not exist! Density of states not loaded. Need to set dos_filename for all atoms.")
-        else:
-            (self.phonon_DoS).append(np.loadtxt(file).T)
-            print("Loaded " + file + " for partial densities of states")
-
-    self.DoS_interp = np.array([interp1d(i[0],i[1],kind='linear', fill_value = 0, bounds_error=False) for i in self.phonon_DoS])
-    self.dos_omega_range = np.array([ self.phonon_DoS[0][0][0], self.phonon_DoS[0][0][-1] ])
-    # Warning: assuming same omega range for all pDOS!
-
-    self.omega_bar = np.array([np.trapz(i[1]*i[0], x=i[0]) for i in self.phonon_DoS])
-    self.omega_inverse_bar = np.array([np.trapz([i[1][j]/i[0][j] if i[0][j] != 0 else 0 for j in range(len(i[0]))],
-                                            x=i[0]) for i in self.phonon_DoS])
-    # if else statement in second line so that there's no divide by 0 error at omega = 0
-
-    return
-
-
-# Function to load Fn(omega) data corresponding to density of states file
-def load_Fn(self,datadir,filename):
-
-    Fn_paths = [datadir + self.target+'/'+ fi.replace('_pDoS','_Fn') for fi in filename]
-
-    self.phonon_Fn = []
-    for file in Fn_paths:
-
-        if not os.path.exists(file):
-            print(f"Warning! {file} does not exist! Need to calculate Fn(omega) from DoS. Use the function 'create_Fn_omega' to produce these files ")
-
-        else:
-            (self.phonon_Fn).append(np.loadtxt(file).T)
-            print("Loaded " + file + " for Fn(omega)")
-
-    # dictionary for Fn functions in terms of number of phonons (offset from index by 1)
-    self.Fn_interpolations = {}
-    for i, Fn in enumerate(self.phonon_Fn):
-        tempdict = {}
-        for n in range(1, len(Fn)):
-            tempdict[n] = interp1d(Fn[0], Fn[n], fill_value=0, bounds_error=False, kind='linear')
-        self.Fn_interpolations[i] = tempdict
-
-    return
