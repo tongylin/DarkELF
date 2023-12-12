@@ -12,9 +12,27 @@ import pandas as pd
 
 
 ##############################################################################
-# Calculates the C_ld's using both multiphonon expansion and impulse approximation. Uses the Fn(omega) files. The function checks whether the qrange is physical, but does not check if single phonon analysis should be used instead of the multiphonon expansion. 
+# Calculates the C_ld's using both multiphonon expansion and impulse approximation.
 
-def C_ld(self, qrange, omega, d):
+def C_ld(self, qrange, omega, d, q_IA_factor = 2):
+    """
+    Calculates the auto-correlation function C_ld(q, omega), which is independent of the lattice site.
+    For q < q_IA_factor*sqrt(2 m_d omega_bar_d), it uses the multiphonon expansion from Fn(omega) files.
+    For q >= q_IA_factor*sqrt(2 m_d omega_bar_d), it uses the impulse approximation.
+
+    The function checks whether the qrange is physical, but does not check if single phonon analysis 
+    should be used instead of the multiphonon expansion. 
+    
+    Inputs
+    ------
+    qrange: numpy array
+        list of q values
+    omega: float
+        single energy
+    d: int
+        integer specifying atom in the crystal. index is same as used for Avec
+    """
+
     if omega > self.omegaDMmax:
         return 0
 
@@ -25,11 +43,13 @@ def C_ld(self, qrange, omega, d):
         
 
     # for q>q_IA_cut, the impulse approximation is used
-    q_IA_cut = max([ 2 * sqrt(2*self.Avec[i]*self.mp*self.omega_bar[i]) for i in range(len(self.atoms))])
+    q_IA_cut = q_IA_factor * sqrt(2*self.Avec[d]*self.mp*self.omega_bar[d])
+    # max([ q_IA_factor * sqrt(2*self.Avec[i]*self.mp*self.omega_bar[i]) for i in range(len(self.atoms))])
+    
     if q_IA_cut >= qrange[-1]:
         q_IA_cut_index = len(qrange)
     else:
-        q_IA_cut_index = next(x for x, val in enumerate(qrange)if val > q_IA_cut)
+        q_IA_cut_index = next(x for x, val in enumerate(qrange) if val > q_IA_cut)
 
 
     q_multiphonon = qrange[0:q_IA_cut_index]
@@ -42,9 +62,12 @@ def C_ld(self, qrange, omega, d):
         cld_multiphonon=np.zeros(len(q_multiphonon))
         for n in range(1, len(self.phonon_Fn[d])):
             # Debye-Waller now included in qpart
-            qpart = q_multiphonon**(2*n) * self.debye_waller(q_multiphonon).T[d] #deleted a q here since it's not in the Clds
-            # deleted the multiplicity function from here, must replace elsewhere.  This is c_ld divided by (2 pi/ V)
-            cld_multiphonon += (1/(2*self.Avec[d]*self.mp))**n * qpart * self.Fn_interpolations[d][n](omega) #the 1/n! is found in the Fn function
+            qpart = q_multiphonon**(2*n) * self.debye_waller(q_multiphonon).T[d] 
+            # Notes:
+            #  1. The atom multiplicity function is not included here, it should be included elsewhere. 
+            #  2. The 1/n! factor is found in the Fn function
+            #  3. This is c_ld divided by (2 pi/ V)
+            cld_multiphonon += (1/(2*self.Avec[d]*self.mp))**n * qpart * self.Fn_interpolations[d][n](omega) 
 
 
     # calculation of the c_ld's via the impulse approximation
@@ -67,7 +90,8 @@ def C_ld(self, qrange, omega, d):
 # Makes Fn(omega) files from an input DoS file
 
 
-def create_Fn_omega(self, datadir=None, dos_filename=None, phonons = 10,npoints=250):
+
+def create_Fn_omega(self, datadir=None, dos_filename=None, phonons = 10, npoints=250):
     """
     Function to create .dat files for Fn(omega), used in multiphonons calculation.
 
@@ -199,7 +223,7 @@ def load_phonon_dos(self,datadir,filename):
 
     self.DoS_interp = np.array([interp1d(i[0],i[1],kind='linear', fill_value = 0, bounds_error=False) for i in self.phonon_DoS])
     self.dos_omega_range = np.array([ self.phonon_DoS[0][0][0], self.phonon_DoS[0][0][-1] ])
-    # Assuming same omega range for all pDOS!
+    # Warning: assuming same omega range for all pDOS!
 
     self.omega_bar = np.array([np.trapz(i[1]*i[0], x=i[0]) for i in self.phonon_DoS])
     self.omega_inverse_bar = np.array([np.trapz([i[1][j]/i[0][j] if i[0][j] != 0 else 0 for j in range(len(i[0]))],
