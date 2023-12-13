@@ -11,6 +11,28 @@ import sys, os, glob
 import pandas as pd
 
 
+### Useful functions for C_ld calculations
+def _debye_waller_scalar(self, q):
+    # Debye Waller factor exp(-2 W(q)) where W(q) = q^2 omega / (4 A mp) for a given atom
+    # Debye-Waller factor set to 1 when q^2 small relative to characteristic q, for numerical convenience
+    one_over_q2_char = self.omega_inverse_bar/(2*self.Avec*self.mp)
+    return np.where(np.less(one_over_q2_char*q**2, 0.03), 1, exp(-one_over_q2_char*q**2))
+
+
+def debye_waller(self, q):
+    '''Debye Waller factor exp(-2 W(q)) where W(q) = q^2 omega / (4 A mp)
+    Inputs
+    ------
+    q: float or array in units of eV. For each q, gives the Debye-Waller factor for each atom '''
+    if (isinstance(q,(np.ndarray,list)) ):
+        return np.array([self._debye_waller_scalar(qi) for qi in q])
+    elif(isinstance(q,float)):
+        return self._debye_waller_scalar(q)
+    else:
+        print("Warning! debye_waller function given invalid quantity ")
+        return 0.0
+
+
 ##############################################################################
 # Calculates the C_ld's using both multiphonon expansion and impulse approximation. Uses the Fn(omega) files. The function checks whether the qrange is physical, but does not check if single phonon analysis should be used instead of the multiphonon expansion. 
 

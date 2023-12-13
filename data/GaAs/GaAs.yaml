@@ -16,4 +16,4 @@ cLAkms: 5.2 # km/s
 cTAkms: 3.1 # km/s
 atoms: ['Ga', 'As'] # names of atoms
 Avec: [69, 75] # Atomic masses
-unitcell: {'Ga':{'A': 69., 'mult':1}, 'As':{'A': 75., 'mult':1}}
+unitcell: {'Ga':{'A': 69., 'mult':1, 'isotope_frac':1}, 'As':{'A': 75., 'mult':1,'isotope_frac':1}}
