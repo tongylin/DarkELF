@@ -4,8 +4,8 @@ from math import factorial
 from scipy.special import erf, erfc, gamma, gammaincc, exp1
 from scipy.interpolate import interp1d, interp2d
 from scipy import integrate
-import vegas
-import gvar
+#import vegas
+#import gvar
 import time
 import sys, os, glob
 import pandas as pd
@@ -34,9 +34,27 @@ def debye_waller(self, q):
 
 
 ##############################################################################
-# Calculates the C_ld's using both multiphonon expansion and impulse approximation. Uses the Fn(omega) files. The function checks whether the qrange is physical, but does not check if single phonon analysis should be used instead of the multiphonon expansion. 
+# Calculates the C_ld's using both multiphonon expansion and impulse approximation.
 
-def C_ld(self, qrange, omega, d):
+def C_ld(self, qrange, omega, d, q_IA_factor = 2):
+    """
+    Calculates the auto-correlation function C_ld(q, omega), which is independent of the lattice site.
+    For q < q_IA_factor*sqrt(2 m_d omega_bar_d), it uses the multiphonon expansion from Fn(omega) files.
+    For q >= q_IA_factor*sqrt(2 m_d omega_bar_d), it uses the impulse approximation.
+
+    The function checks whether the qrange is physical, but does not check if single phonon analysis 
+    should be used instead of the multiphonon expansion. 
+    
+    Inputs
+    ------
+    qrange: numpy array
+        list of q values
+    omega: float
+        single energy
+    d: int
+        integer specifying atom in the crystal. index is same as used for Avec
+    """
+
     if omega > self.omegaDMmax:
         return 0
 
@@ -47,11 +65,13 @@ def C_ld(self, qrange, omega, d):
         
 
     # for q>q_IA_cut, the impulse approximation is used
-    q_IA_cut = max([ 2 * sqrt(2*self.Avec[i]*self.mp*self.omega_bar[i]) for i in range(len(self.atoms))])
+    q_IA_cut = q_IA_factor * sqrt(2*self.Avec[d]*self.mp*self.omega_bar[d])
+    # max([ q_IA_factor * sqrt(2*self.Avec[i]*self.mp*self.omega_bar[i]) for i in range(len(self.atoms))])
+    
     if q_IA_cut >= qrange[-1]:
         q_IA_cut_index = len(qrange)
     else:
-        q_IA_cut_index = next(x for x, val in enumerate(qrange)if val > q_IA_cut)
+        q_IA_cut_index = next(x for x, val in enumerate(qrange) if val > q_IA_cut)
 
 
     q_multiphonon = qrange[0:q_IA_cut_index]
@@ -64,9 +84,12 @@ def C_ld(self, qrange, omega, d):
         cld_multiphonon=np.zeros(len(q_multiphonon))
         for n in range(1, len(self.phonon_Fn[d])):
             # Debye-Waller now included in qpart
-            qpart = q_multiphonon**(2*n) * self.debye_waller(q_multiphonon).T[d] #deleted a q here since it's not in the Clds
-            # deleted the multiplicity function from here, must replace elsewhere.  This is c_ld divided by (2 pi/ V)
-            cld_multiphonon += (1/(2*self.Avec[d]*self.mp))**n * qpart * self.Fn_interpolations[d][n](omega) #the 1/n! is found in the Fn function
+            qpart = q_multiphonon**(2*n) * self.debye_waller(q_multiphonon).T[d] 
+            # Notes:
+            #  1. The atom multiplicity function is not included here, it should be included elsewhere. 
+            #  2. The 1/n! factor is found in the Fn function
+            #  3. This is c_ld divided by (2 pi/ V)
+            cld_multiphonon += (1/(2*self.Avec[d]*self.mp))**n * qpart * self.Fn_interpolations[d][n](omega) 
 
 
     # calculation of the c_ld's via the impulse approximation
@@ -88,8 +111,136 @@ def C_ld(self, qrange, omega, d):
 ##############################################################################
 # Makes Fn(omega) files from an input DoS file
 
+#Calculate Tn and Fn for given DOS data  
+def create_Fn_omega(self,datadir=None, dos_filename=None, phonons = 10, npoints=1000):
+    """
+    Function to create an array of Fn values for a given material.
 
-def create_Fn_omega(self, datadir=None, dos_filename=None, phonons = 10,npoints=250):
+    Uses recursive relation on Tn = n! * Fn and then divides by n! at the end for Fn
+
+    Inputs
+    ------
+    datadir: string
+        directory with DoS file, default is self.eps_data_dir with all the other data
+    dos_filename: list of strings
+        DoS filename(s), default is self.dos_filename which is set when the class is instantiated
+    phonons: int
+        specifies up to how many phonons Fn is calculated for. Default value is 10.
+    npoints: int
+        number of omega points to compute Fn grid, default is 250
+        (750 were used for calculations in draft, takes ~four hours)
+    
+    """
+
+    if(datadir == None):
+        datadir = self.eps_data_dir
+    if(dos_filename == None):
+        dos_filename = self.dos_filename
+
+    # omega range for Fn files (determined by DoS range) - this could be expanded as needed.
+    omegarange = np.linspace(self.dos_omega_range[0],
+                                (phonons/2)*self.dos_omega_range[1], npoints)
+    
+    # omega array for each atom
+    omega_d = [self.phonon_DoS[i][0] for i in range(len(self.atoms)) ]
+    # Extract D(omega_n)/omega_n from DoS data
+    T1_d =  [self.phonon_DoS[i][1]/self.phonon_DoS[i][0] for i in range(len(self.atoms)) ]
+
+    # Interpolated T1 function 
+    T1_d_interp = [interp1d(DoS[0],DoS[1]/DoS[0],fill_value=0,bounds_error=False) for DoS in self.phonon_DoS]
+
+    for atom, pdos in enumerate(dos_filename):
+        fn_path = datadir + self.target+'/'+ pdos.replace('_pDoS','_Fn')
+
+        # Create array that stores each T1 or F1 function over the entire omega range of interest
+        # Add list of F2, F3,... up to FN to this array and return it
+        Tn_array = np.array([T1_d_interp[atom](omegarange)])
+        Fn_array = np.array([Tn_array[0]])
+
+        T_n_minus_1_interp = T1_d_interp[atom]
+
+        for n in range(1,phonons):
+            Tn_array = np.append(Tn_array, \
+                                  [ [np.trapz(T1_d[atom]*T_n_minus_1_interp(W-omega_d[atom]), omega_d[atom]) for W in omegarange] ], axis=0)
+            Fn_array = np.append(Fn_array, [Tn_array[-1]/factorial(n+1)],axis=0)
+
+            # Update the T_(n-1) function using the last computed integral
+            #print(omegarange)
+            #print(Tn_array)
+            #print(Tn_array[-1])
+            T_n_minus_1_interp = interp1d(omegarange, Tn_array[-1],fill_value=0,bounds_error=False,kind='linear')
+        
+        Fndata = np.append([omegarange],Fn_array,axis=0)
+        label = '# First column is omega in [eV], second column is F1(omega) in [eV-2], third column is F2(omega) in [eV-3], etc.'
+        np.savetxt(fn_path, Fndata.T,header=label)
+        print("result saved in "+fn_path)
+
+    self.load_Fn(datadir, dos_filename)
+    
+    return 
+
+############################################################################################
+
+# Function to load density of states
+def load_phonon_dos(self,datadir,filename):
+
+    dos_paths = [datadir + self.target+'/'+ fi for fi in filename]
+    self.phonon_DoS = []
+
+    for file in dos_paths:
+
+        if not os.path.exists(file):
+            print(f"Warning, {file} does not exist! Density of states not loaded. Need to set dos_filename for all atoms.")
+        else:
+            (self.phonon_DoS).append(np.loadtxt(file).T)
+            print("Loaded " + file + " for partial densities of states")
+
+    self.DoS_interp = np.array([interp1d(i[0],i[1],kind='linear', fill_value = 0, bounds_error=False) for i in self.phonon_DoS])
+    self.dos_omega_range = np.array([ self.phonon_DoS[0][0][0], self.phonon_DoS[0][0][-1] ])
+    # Warning: assuming same omega range for all pDOS!
+
+    self.omega_bar = np.array([np.trapz(i[1]*i[0], x=i[0]) for i in self.phonon_DoS])
+    self.omega_inverse_bar = np.array([np.trapz([i[1][j]/i[0][j] if i[0][j] != 0 else 0 for j in range(len(i[0]))],
+                                            x=i[0]) for i in self.phonon_DoS])
+    # if else statement in second line so that there's no divide by 0 error at omega = 0
+
+    return
+
+
+# Function to load Fn(omega) data corresponding to density of states file
+def load_Fn(self,datadir,filename):
+
+    Fn_paths = [datadir + self.target+'/'+ fi.replace('_pDoS','_Fn') for fi in filename]
+
+    self.phonon_Fn = []
+    for file in Fn_paths:
+
+        if not os.path.exists(file):
+            print(f"Warning! {file} does not exist! Need to calculate Fn(omega) from DoS. Use the function 'create_Fn_omega' to produce these files ")
+
+        else:
+            (self.phonon_Fn).append(np.loadtxt(file).T)
+            print("Loaded " + file + " for Fn(omega)")
+
+    # dictionary for Fn functions in terms of number of phonons (offset from index by 1)
+    self.Fn_interpolations = {}
+    for i, Fn in enumerate(self.phonon_Fn):
+        tempdict = {}
+        for n in range(1, len(Fn)):
+            tempdict[n] = interp1d(Fn[0], Fn[n], fill_value=0, bounds_error=False, kind='linear')
+        self.Fn_interpolations[i] = tempdict
+
+    return
+
+
+
+
+
+############################################################################################
+
+
+# Old functions using vegas to evaluate multiphonon integrals -- very slow.
+def create_Fn_omega_vegas(self, datadir=None, dos_filename=None, phonons = 10, npoints=250):
     """
     Function to create .dat files for Fn(omega), used in multiphonons calculation.
 
@@ -199,59 +350,3 @@ def Fn_vegas(self, omega, n, atom):
             return self.DoS_interp[atom](omega)/omega
     else:
         raise Exception('n must be a nonnegative integer')
-
-
-
-
-############################################################################################
-
-# Function to load density of states
-def load_phonon_dos(self,datadir,filename):
-
-    dos_paths = [datadir + self.target+'/'+ fi for fi in filename]
-    self.phonon_DoS = []
-
-    for file in dos_paths:
-
-        if not os.path.exists(file):
-            print(f"Warning, {file} does not exist! Density of states not loaded. Need to set dos_filename for all atoms.")
-        else:
-            (self.phonon_DoS).append(np.loadtxt(file).T)
-            print("Loaded " + file + " for partial densities of states")
-
-    self.DoS_interp = np.array([interp1d(i[0],i[1],kind='linear', fill_value = 0, bounds_error=False) for i in self.phonon_DoS])
-    self.dos_omega_range = np.array([ self.phonon_DoS[0][0][0], self.phonon_DoS[0][0][-1] ])
-    # Assuming same omega range for all pDOS!
-
-    self.omega_bar = np.array([np.trapz(i[1]*i[0], x=i[0]) for i in self.phonon_DoS])
-    self.omega_inverse_bar = np.array([np.trapz([i[1][j]/i[0][j] if i[0][j] != 0 else 0 for j in range(len(i[0]))],
-                                            x=i[0]) for i in self.phonon_DoS])
-    # if else statement in second line so that there's no divide by 0 error at omega = 0
-
-    return
-
-
-# Function to load Fn(omega) data corresponding to density of states file
-def load_Fn(self,datadir,filename):
-
-    Fn_paths = [datadir + self.target+'/'+ fi.replace('_pDoS','_Fn') for fi in filename]
-
-    self.phonon_Fn = []
-    for file in Fn_paths:
-
-        if not os.path.exists(file):
-            print(f"Warning! {file} does not exist! Need to calculate Fn(omega) from DoS. Use the function 'create_Fn_omega' to produce these files ")
-
-        else:
-            (self.phonon_Fn).append(np.loadtxt(file).T)
-            print("Loaded " + file + " for Fn(omega)")
-
-    # dictionary for Fn functions in terms of number of phonons (offset from index by 1)
-    self.Fn_interpolations = {}
-    for i, Fn in enumerate(self.phonon_Fn):
-        tempdict = {}
-        for n in range(1, len(Fn)):
-            tempdict[n] = interp1d(Fn[0], Fn[n], fill_value=0, bounds_error=False)
-        self.Fn_interpolations[i] = tempdict
-
-    return
