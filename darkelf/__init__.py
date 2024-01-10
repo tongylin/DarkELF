@@ -56,7 +56,7 @@ class darkelf(object):
         # mass of atoms in unit cell
         self.Avec = np.array([self.unitcell[ai]['A'] for ai in self.atoms])
         self.Amult = np.array([self.unitcell[ai]['mult'] for ai in self.atoms])
-        
+
         if np.isin(list(self.unitcell[self.atoms[0]].keys()), 'isotope_frac').any():
             self.isotope_frac_vec = np.array([self.unitcell[ai]['isotope_frac'] for ai in self.atoms])
 
@@ -190,16 +190,16 @@ class darkelf(object):
     from .fnomega import Fn_integrand, Fn_vegas, load_phonon_dos, load_Fn
     from .fnomega import create_Fn_omega
     from .fnomega import C_ld
-    from .fnomega import debye_waller, _debye_waller_scalar
+    from .fnomega import debye_waller
 
     from .multiphonon_spin_independent import sigma_multiphonons_SI, R_multiphonons_SI, R_single_phonon
     from .multiphonon_spin_independent import _R_single_optical, _R_single_acoustic, _dR_domega_coherent_single
     from .multiphonon_spin_independent import _dR_domega_multiphonons_SI, _R_multiphonons_prefactor_SI
     from .multiphonon_spin_independent import load_fd_darkphoton
-    
+
     from .multiphonon_spin_dependent import sigma_multiphonons_SD, R_multiphonons_SD
     from .multiphonon_spin_dependent import _dR_domega_multiphonons_SD, _R_multiphonons_prefactor_SD
-    
+
     from .electron import R_electron, dRdomega_electron, dRdomegadk_electron
     from .electron import electron_yield, dRdQ_electron
 
@@ -311,13 +311,13 @@ class darkelf(object):
 
     def Fmed_nucleus_SI(self,q):
         return (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
-    
+
     def Fmed_nucleus_SD(self, q, SD_op='Of3'):
         if SD_op == 'Of3': # this corresponds to scalar dark matter
             return np.abs(q)/self.q0 * (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
         elif SD_op == 'Of4': # this corresponds to fermionic DM with spin 1/2
             return q**2/self.q0**2 * (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
-        else: 
+        else:
             raise Exception("This spin dependent operator has not yet been defined")
 
     def Fmed_electron(self,q):
