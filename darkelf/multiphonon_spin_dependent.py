@@ -25,12 +25,11 @@ import sys, os
 
 def _R_multiphonons_prefactor_SD(self, sigman, SD_op):
     # Input sigman in cm^2; output is the rate pre-factor in cm^2
-    # Currently operators Of3 (scalar DM) and Of4 (psuedoscalar DM) have been implemented 
+    # Currently operators Of3 (scalar DM) and Of4 (psuedoscalar DM) have been implemented
 
     totalmass = self.mp * sum(self.Amult*self.Avec)
-    
     spin_independent_factor = sigman*((1/totalmass)* (self.rhoX*self.eVcm**3)/(2*self.mX*(self.muxnucleon)**2))*((1/self.eVcm**2)*(self.eVtoInvYr/self.eVtokg))
-    
+
     if SD_op == 'Of3':
         return spin_independent_factor * 32 * 0.25 * (self.muxnucleon)**2 / self.mX**2
     elif SD_op == 'Of4':
@@ -49,8 +48,8 @@ def sigma_multiphonons_SD(self, threshold, SD_op='Of3'):
       experimental threshold, in eV
     SD
     '''
-    
-    rate = self.R_multiphonons_SD(threshold, SD_op)
+
+    rate = self.R_multiphonons_SD(threshold, SD_op=SD_op)
     if rate != 0:
         return (3.0*1e-38)/rate
     else:
@@ -111,7 +110,7 @@ def _dR_domega_multiphonons_SD(self, omega, sigman=1e-38, SD_op='Of3', npoints=2
 
     if qmin >= qmax:
         return 0
-    
+
     qrange = np.linspace(qmin, qmax, npoints)
 
     # Choice of effective coupling
@@ -119,7 +118,7 @@ def _dR_domega_multiphonons_SD(self, omega, sigman=1e-38, SD_op='Of3', npoints=2
         fd = np.tile(np.array([self.isotope_frac_vec]),(npoints, 1)).T
     except NameError:
         print('Please make sure the yaml file includes the isotope_frac information in the unit_cell dictionary')
-    
+
 
     formfactorsquared = self.Fmed_nucleus_SD(qrange, SD_op=SD_op)**2
 
@@ -132,6 +131,5 @@ def _dR_domega_multiphonons_SD(self, omega, sigman=1e-38, SD_op='Of3', npoints=2
     dR_domega_dq = S * qrange * formfactorsquared * self.etav((qrange/(2*self.mX)) + omega/qrange)
 
     dR_domega = np.trapz(dR_domega_dq, qrange)
-    
+
     return self._R_multiphonons_prefactor_SD(sigman, SD_op) * dR_domega
- 
