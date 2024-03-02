@@ -31,9 +31,9 @@ def _R_multiphonons_prefactor_SD(self, sigman, SD_op):
     spin_independent_factor = sigman*((1/totalmass)* (self.rhoX*self.eVcm**3)/(2*self.mX*(self.muxnucleon)**2))*((1/self.eVcm**2)*(self.eVtoInvYr/self.eVtokg))
 
     if SD_op == 'Of3':
-        return spin_independent_factor * 32 * 0.25 * (self.muxnucleon)**2 / self.mX**2
+        return spin_independent_factor * 32 * (self.muxnucleon)**2 / self.mX**2 / self.q0**2 * self.mp**2
     elif SD_op == 'Of4':
-        return spin_independent_factor * 192 * 0.25 * 0.25 * (self.muxnucleon)**2 / self.mX**2
+        return spin_independent_factor * 192 * 0.25 * (self.muxnucleon)**2 / self.mX**2 / self.q0**2 * self.mp**2
     else:
         raise Exception("This spin dependent operator has not yet been defined")
 
@@ -115,9 +115,9 @@ def _dR_domega_multiphonons_SD(self, omega, sigman=1e-38, SD_op='Of3', npoints=2
 
     # Choice of effective coupling
     try:
-        fd = np.tile(np.array([self.isotope_frac_vec]),(npoints, 1)).T
+        fd = np.tile(np.array([self.f_d_vec]),(npoints, 1)).T
     except NameError:
-        print('Please make sure the yaml file includes the isotope_frac information in the unit_cell dictionary')
+        print('Please make sure the yaml file includes the f_d information in the unit_cell dictionary for this material')
 
 
     formfactorsquared = self.Fmed_nucleus_SD(qrange, SD_op=SD_op)**2
@@ -125,7 +125,7 @@ def _dR_domega_multiphonons_SD(self, omega, sigman=1e-38, SD_op='Of3', npoints=2
     S = 0
     for d in range(len(self.atoms)):
         # This is structure factor divided by (2 pi/ omega_c)
-        S += self.Amult[d] * fd[d]**2 * self.C_ld(qrange, omega, d)
+        S += self.Amult[d] * fd[d]**2 / (self.Avec[d] * self.mp)**2 * qrange**2 * self.S_d_squared[d] * self.C_ld(qrange, omega, d)
 
     # add contributions from all atoms
     dR_domega_dq = S * qrange * formfactorsquared * self.etav((qrange/(2*self.mX)) + omega/qrange)

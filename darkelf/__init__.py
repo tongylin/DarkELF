@@ -59,6 +59,11 @@ class darkelf(object):
 
         if np.isin(list(self.unitcell[self.atoms[0]].keys()), 'isotope_frac').any():
             self.isotope_frac_vec = np.array([self.unitcell[ai]['isotope_frac'] for ai in self.atoms])
+        if np.isin(list(self.unitcell[self.atoms[0]].keys()), 'atomic_spin').any():
+            self.atomic_spin_vec = np.array([self.unitcell[ai]['atomic_spin'] for ai in self.atoms])
+            self.S_d_squared = 1/3 * self.atomic_spin_vec * (1 + self.atomic_spin_vec)
+        if np.isin(list(self.unitcell[self.atoms[0]].keys()), 'f_d').any():
+            self.f_d_vec = np.array([self.unitcell[ai]['f_d'] for ai in self.atoms])
 
         # !TL - these will become a vector more generally
         # nucleon mass used for Migdal calculation, regular nuclear recoils
@@ -314,9 +319,9 @@ class darkelf(object):
 
     def Fmed_nucleus_SD(self, q, SD_op='Of3'):
         if SD_op == 'Of3': # this corresponds to scalar dark matter
-            return np.abs(q)/self.q0 * (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
+            return (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
         elif SD_op == 'Of4': # this corresponds to fermionic DM with spin 1/2
-            return q**2/self.q0**2 * (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
+            return np.abs(q)/self.q0 * (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
         else:
             raise Exception("This spin dependent operator has not yet been defined")
 
