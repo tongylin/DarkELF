@@ -27,7 +27,7 @@ def _R_multiphonons_prefactor_SD(self, sigman, SD_op):
     # Input sigman in cm^2; output is the rate pre-factor in cm^2
     # Currently operators Of3 (scalar DM) and Of4 (psuedoscalar DM) have been implemented
 
-    totalmass = self.mp * sum(self.Amult*self.Avec)
+    totalmass = sum(self.Amult*self.mvec)
     spin_independent_factor = sigman*((1/totalmass)* (self.rhoX*self.eVcm**3)/(2*self.mX*(self.muxnucleon)**2))*((1/self.eVcm**2)*(self.eVtoInvYr/self.eVtokg))
 
     if SD_op == 'Of3':
@@ -125,7 +125,7 @@ def _dR_domega_multiphonons_SD(self, omega, sigman=1e-38, SD_op='Of3', npoints=2
     S = 0
     for d in range(len(self.atoms)):
         # This is structure factor divided by (2 pi/ omega_c)
-        S += self.Amult[d] * fd[d]**2 / (self.Avec[d] * self.mp)**2 * qrange**2 * self.S_d_squared[d] * self.C_ld(qrange, omega, d)
+        S += self.Amult[d] * fd[d]**2 / (self.mvec[d])**2 * qrange**2 * self.S_d_squared[d] * self.C_ld(qrange, omega, d)
 
     # add contributions from all atoms
     dR_domega_dq = S * qrange * formfactorsquared * self.etav((qrange/(2*self.mX)) + omega/qrange)

@@ -57,13 +57,20 @@ class darkelf(object):
         self.Avec = np.array([self.unitcell[ai]['A'] for ai in self.atoms])
         self.Amult = np.array([self.unitcell[ai]['mult'] for ai in self.atoms])
 
-        if np.isin(list(self.unitcell[self.atoms[0]].keys()), 'isotope_frac').any():
-            self.isotope_frac_vec = np.array([self.unitcell[ai]['isotope_frac'] for ai in self.atoms])
-        if np.isin(list(self.unitcell[self.atoms[0]].keys()), 'atomic_spin').any():
-            self.atomic_spin_vec = np.array([self.unitcell[ai]['atomic_spin'] for ai in self.atoms])
-            self.S_d_squared = 1/3 * self.atomic_spin_vec * (1 + self.atomic_spin_vec)
-        if np.isin(list(self.unitcell[self.atoms[0]].keys()), 'f_d').any():
-            self.f_d_vec = np.array([self.unitcell[ai]['f_d'] for ai in self.atoms])
+        if self.unitcell[self.atoms[0]].get('isotopes') != None:
+            self.S_d_squared = np.zeros(len(self.atoms))
+            self.f_d_vec = np.zeros(len(self.atoms))
+            self.mvec = np.zeros(len(self.atoms))
+            for i, ai in enumerate(self.atoms):
+                for j in range(len(self.unitcell[ai]['isotopes'])):
+                    frac = self.unitcell[ai]['isotopes'][j]['frac']
+                    atomic_spin = self.unitcell[ai]['isotopes'][j]['atomic_spin']
+                    self.S_d_squared[i] += frac * 1/3 * atomic_spin * (1 + atomic_spin)
+                    self.f_d_vec[i] += frac * self.unitcell[ai]['isotopes'][j]['f_d']
+                    self.mvec[i] += self.mp * frac * self.unitcell[ai]['isotopes'][j]['A']
+        else:
+            self.mvec = Avec * self.mp
+
 
         # !TL - these will become a vector more generally
         # nucleon mass used for Migdal calculation, regular nuclear recoils
