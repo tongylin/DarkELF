@@ -16,4 +16,4 @@ cLAkms: 5.2 # km/s
 cTAkms: 3.1 # km/s
 atoms: ['Ga', 'As'] # names of atoms
 Avec: [69, 75] # Atomic masses
-unitcell: {'Ga':{'A':69, 'mult':1, isotopes:[{'atom':'Ga', 'A':69., 'frac':0.601, 'atomic_spin':1.5, 'f_d':0.0750967}, {'atom':'Ga', 'A':71., 'frac':0.399, 'atomic_spin':1.5, 'f_d':0.154422}]},'As':{'A':75., 'mult':1., 'isotopes':[{'atom':'As', 'A':75., 'frac':1, 'atomic_spin':1.5, 'f_d':0.00879779}]}}
+unitcell: {'Ga':{'A':69, 'mult':1, isotopes:[{'atom':'Ga', 'A':69., 'frac':0.601, 'atomic_spin':1.5, 'f_p':0.0750967, 'f_n':0.0}, {'atom':'Ga', 'A':71., 'frac':0.399, 'atomic_spin':1.5, 'f_p':0.154422, 'f_n':0.0}]},'As':{'A':75., 'mult':1., 'isotopes':[{'atom':'As', 'A':75., 'frac':1, 'atomic_spin':1.5, 'f_p':0.00879779, 'f_n':0.0}]}}
