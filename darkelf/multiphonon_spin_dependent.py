@@ -33,9 +33,9 @@ def _R_multiphonons_prefactor_SD(self, sigman):
     if self.SD_op == 'Of3':
         return spin_independent_factor * 32 / self.q0**2 #* (self.muxnucleon)**2 / self.mX**2 #* self.mp**2
     elif self.SD_op == 'Of4':
-        return spin_independent_factor * 192 * 0.25 / self.q0**2 #* (self.muxnucleon)**2 / self.mX**2 / self.q0**2 #* self.mp**2
+        return spin_independent_factor * 48 / self.q0**2 #* (self.muxnucleon)**2 / self.mX**2 / self.q0**2 #* self.mp**2
     elif self.SD_op == 'Of8':
-        return spin_independent_factor / 12 * 0.25 #* (self.muxnucleon)**2 / self.mX**2
+        return spin_independent_factor / 16
     else:
         raise Exception("This spin dependent operator has not yet been defined")
 
@@ -128,9 +128,10 @@ def _dR_domega_multiphonons_SD(self, omega, sigman=1e-38, npoints=200):
         if (self.SD_op == 'Of3') or (self.SD_op == 'Of4'):
             S += self.Amult[d] * self.isotope_averaged_factors[d] * qrange**2 * self.C_ld(qrange, omega, d) #isotope averaging over S_N.f_d/m_d
         elif self.SD_op == 'Of8':
-            S += self.Amult[d] * self.isotope_averaged_factors[d] * self.C_ld(qrange, omega, d) #isotope averaging over S_N.f_d
+            S += self.Amult[d] * 16 * self.isotope_averaged_factors[d] * self.C_ld(qrange, omega, d) #isotope averaging over S_N.f_d
         else:
             raise Exception("This spin dependent operator has not yet been defined")
+
     # add contributions from all atoms
     dR_domega_dq = S * qrange * formfactorsquared * self.etav((qrange/(2*self.mX)) + omega/qrange)
 
@@ -149,12 +150,12 @@ def _dR_domega_Haxton_SD(self, omega, sigman=1e-38):
     muT = mT * self.mX / (self.mX + mT)
     qrange = np.sqrt(2 * mT * omega)
     vmin = qrange / 2 / muT
-    formfactor = (self.q0**2 + self.mMed**2)/(qrange**2 + self.mMed**2)
+    # formfactor = (self.q0**2 + self.mMed**2)/(qrange**2 + self.mMed**2)
 
     if self.SD_op == 'Of4':
-        dR_domega = sigman * self.NTkg * (self.rhoX * self.eVcm**3) / self.mX**3 * 8 / self.q0**4 * sum(self.Amult * formfactor**2 * qrange**4 * self.etav(vmin) * mT * self.isotope_averaged_factors_haxton) * self.mX**2 / (self.muxnucleon)**2
+        dR_domega = sigman * self.NUCkg * (self.rhoX * self.eVcm**3) / self.mX**3 * 8 / self.q0**4 * sum(self.Amult * qrange**4 * self.etav(vmin) * mT * self.isotope_averaged_factors_haxton) * self.mX**2 / (self.muxnucleon)**2
     elif self.SD_op == 'Of8':
-        dR_domega = sigman * self.NTkg * (self.rhoX * self.eVcm**3) / self.mX**3 / 6 * sum(self.Amult * formfactor**2 * self.etav(vmin) * mT * self.isotope_averaged_factors_haxton) * self.mX**2 / (self.muxnucleon)**2
+        dR_domega = sigman * self.NUCkg * (self.rhoX * self.eVcm**3) / self.mX**3 / 6 * sum(self.Amult * self.etav(vmin) * mT * self.isotope_averaged_factors_haxton) * self.mX**2 / (self.muxnucleon)**2
     else:
         raise Exception("This spin dependent operator has not yet been defined")
 

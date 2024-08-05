@@ -65,7 +65,7 @@ class darkelf(object):
         self.mN=self.A*self.mp
         self.NTkg = 5.9786e26/self.A  # number of targets per kg
 
-        self.NTkg = 5.9786e26 / sum(self.Avec * self.Amult) # number of targets per kg
+        self.NUCkg = 5.9786e26 / sum(self.Avec * self.Amult) # number of unitcells per kg
 
         # Sound speeds in units of c
         self.cLA = self.cLAkms/self.c0
@@ -327,9 +327,6 @@ class darkelf(object):
         # Sets the factor that is isotope averaged (f_d^2 <S^2> / m_d^2) based
         # on the ratio of g_p and g_n and which one is on top
         if self.unitcell[self.atoms[0]].get('isotopes') != None:
-            # self.S_d_squared = np.zeros(len(self.atoms))
-            # self.f_d_vec = np.zeros(len(self.atoms))
-
             self.mvec = np.zeros(len(self.atoms))
             self.isotope_averaged_factors = np.zeros(len(self.atoms))
             self.isotope_averaged_factors_haxton = np.zeros(len(self.atoms))
@@ -351,15 +348,12 @@ class darkelf(object):
                     # self.f_d_vec[i] += frac * self.unitcell[ai]['isotopes'][j]['f_d']
                     self.mvec[i] += self.mp * frac * self.unitcell[ai]['isotopes'][j]['A']
 
-                    if (self.SD_op == 'Of3') or (self.SD_op == 'Of4'):
-                        # self.isotope_averaged_factors[i] += frac * (1/3. * atomic_spin * (1. + atomic_spin)) * f_d**2 / (self.mp * self.unitcell[ai]['isotopes'][j]['A'])**2
-                        self.isotope_averaged_factors[i] += frac * (1/3. * atomic_spin * (1. + atomic_spin)) * f_d**2 #/ (self.unitcell[ai]['isotopes'][j]['A'])**2
-                    elif self.SD_op == 'Of8':
+                    if (self.SD_op == 'Of3') or (self.SD_op == 'Of4') or (self.SD_op == 'Of8'):
                         self.isotope_averaged_factors[i] += frac * (1/3. * atomic_spin * (1. + atomic_spin)) * f_d**2
                     else:
                         raise Exception("This spin dependent operator has not yet been defined")
-            if self.haxton:
-                self.isotope_averaged_factors_haxton[i] += frac * atomic_spin * (1. + atomic_spin) * f_d**2
+                    if self.haxton:
+                        self.isotope_averaged_factors_haxton[i] += frac * atomic_spin * (1. + atomic_spin) * f_d**2
 
             self.gp_gn_ratio = gp_gn_ratio
             self.gp_gn_ratio_val = gp_gn_ratio_val
@@ -373,7 +367,7 @@ class darkelf(object):
         if self.SD_op == 'Of3': # this corresponds to a nonrelativistic interaction q.S_N
             return (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
         elif self.SD_op == 'Of4': # this corresponds to a nonrelativistic interaction (q.S_X)(q.S_N)
-            return np.abs(q)/self.q0 * (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
+            return q/self.q0 * (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
         elif self.SD_op == 'Of8': # this corresponds to a nonrelativistic interaction S_N.S_X
             return (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
         else:

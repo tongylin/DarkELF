@@ -12,4 +12,4 @@ cLAkms : 5.3
 Avec : [72.]
 lattice_spacing: 5.66 # Angstroms
 atoms: ['Ge']
-unitcell: {'Ge':{'A': 72., 'mult':2}}
+unitcell: {'Ge':{'A': 72., 'mult':2, 'isotopes':[{'A':70., 'frac':0.205, 'atomic_spin':0, 'f_p':0.0, 'f_n':0.0}, {'A':72., 'frac':0.274, 'atomic_spin':0, 'f_p':0.0, 'f_n':0.0}, {'A':73., 'frac':0.0776, 'atomic_spin':4.5, 'f_p':0.007, 'f_n':0.098}, {'A':74., 'frac':0.365, 'atomic_spin':0, 'f_p':0.0, 'f_n':0.0}, {'A':76., 'frac':0.0775, 'atomic_spin':0, 'f_p':0.0, 'f_n':0.0}]}}

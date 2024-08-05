@@ -6,3 +6,6 @@ darkelf/__pycache__
 examples/.*
 examples/darkelf_tester.ipynb
 *.DS_Store
+examples/heavy_data.csv
+examples/light_data.csv
+examples/plots/
