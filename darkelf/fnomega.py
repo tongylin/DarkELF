@@ -66,20 +66,26 @@ def C_ld(self, qrange, omega, d, q_IA_factor = 2):
     q_multiphonon = qrange[0:q_IA_cut_index]
     q_IA = qrange[q_IA_cut_index::]
 
+    # n_min: minimum number of phonons 
+    # n_max_plus_one: maximum number of phonons + 1 (since range below goes up to n_max - 1)
+    n_min = int(np.ceil(omega / self.dos_omega_range[1]))
+    n_max_plus_one = len(self.phonon_Fn[d])
+
     # Calculation of the c_ld's via multiphonon expansion
     if q_multiphonon.size == 0:
         cld_multiphonon = np.empty(0)
     else:
         cld_multiphonon=np.zeros(len(q_multiphonon))
         debye_waller_factor = self.debye_waller(q_multiphonon).T
-        for n in range(1, len(self.phonon_Fn[d])):
-            # Debye-Waller now included in qpart
-            qpart = q_multiphonon**(2*n) * debye_waller_factor[d]
-            # Notes:
-            #  1. The atom multiplicity function is not included here, it should be included elsewhere.
-            #  2. The 1/n! factor is found in the Fn function
-            #  3. This is c_ld divided by (2 pi/ V)
-            cld_multiphonon += (1/(2*self.Avec[d]*self.mp))**n * qpart * self.Fn_interpolations[d][n](omega)
+        if(n_min < n_max_plus_one):
+            for n in range(n_min, n_max_plus_one):
+                # Debye-Waller now included in qpart
+                qpart = q_multiphonon**(2*n) * debye_waller_factor[d]
+                # Notes:
+                #  1. The atom multiplicity function is not included here, it should be included elsewhere.
+                #  2. The 1/n! factor is found in the Fn function
+                #  3. This is c_ld divided by (2 pi/ V)
+                cld_multiphonon += (1/(2*self.Avec[d]*self.mp))**n * qpart * self.Fn_interpolations[d][n](omega)
 
 
     # calculation of the c_ld's via the impulse approximation
