@@ -140,19 +140,22 @@ def load_phonon_dos(self,datadir,filename):
 
         if not os.path.exists(file):
             print(f"Warning, {file} does not exist! Density of states not loaded. Need to set dos_filename for all atoms.")
+            self.phonon_dos_loaded=False
         else:
             (self.phonon_DoS).append(np.loadtxt(file).T)
             print("Loaded " + file + " for partial densities of states")
+            self.phonon_dos_loaded=True
+    if self.phonon_dos_loaded:       
+      self.DoS_interp = np.array([interp1d(i[0],i[1],kind='linear', fill_value = 0, bounds_error=False) for i in self.phonon_DoS])
+      self.dos_omega_range = np.array([ self.phonon_DoS[0][0][0], self.phonon_DoS[0][0][-1] ])
+      # Assuming same omega range for all pDOS!
 
-    self.DoS_interp = np.array([interp1d(i[0],i[1],kind='linear', fill_value = 0, bounds_error=False) for i in self.phonon_DoS])
-    self.dos_omega_range = np.array([ self.phonon_DoS[0][0][0], self.phonon_DoS[0][0][-1] ])
-    # Assuming same omega range for all pDOS!
-
-    self.omega_bar = np.array([np.trapz(i[1]*i[0], x=i[0]) for i in self.phonon_DoS])
-    self.omega_inverse_bar = np.array([np.trapz([i[1][j]/i[0][j] if i[0][j] != 0 else 0 for j in range(len(i[0]))],
+      self.omega_bar = np.array([np.trapz(i[1]*i[0], x=i[0]) for i in self.phonon_DoS])
+      self.omega_inverse_bar = np.array([np.trapz([i[1][j]/i[0][j] if i[0][j] != 0 else 0 for j in range(len(i[0]))],
                                             x=i[0]) for i in self.phonon_DoS])
     # if else statement in second line so that there's no divide by 0 error at omega = 0
-
+    else:
+      self.dos_omega_range=np.array([0,0.1]) # arbitrary, not used
     return
 
 

@@ -3,6 +3,7 @@ import numpy as np
 ############################################################################################
 
 
+
 def R_absorption(self,kappa=1e-15):
     """
     Returns rate for dark photon absorption, events per 1/kg/yr. Will use electronic ELF for mX > electronic band gap and phonon ELF otherwise. If the required ELF is not loaded or if mX is outside the range of the grid, the function will return zero.
@@ -21,7 +22,9 @@ def R_absorption(self,kappa=1e-15):
       else:
         return 0.0
     else:
-      if self.electron_ELF_loaded:
+      if self.eps_electron_opticallimit_loaded:
+        return kappa**2*foo*self.elf(self.mX,self.mX,method="optical") 
+      elif self.electron_ELF_loaded:
         return kappa**2*foo*self.elf(self.mX,self.mX,method="grid")
       else:
         return 0.0
