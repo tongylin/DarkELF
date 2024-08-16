@@ -12,7 +12,7 @@ class darkelf(object):
     def __init__(self, mX = 1e5, mMed = -1, vesckms = 500, v0kms = 220, vekms = 240, delta = 0.0, q0=0.0,
         target='Ge',targetyaml='',filename="", phonon_filename="",
         eps_data_dir = os.path.dirname(__file__)+"/../data/",
-        dos_filename="",fd_filename="",Zion_filename=""):
+        dos_filename="",fd_filename="",Zion_filename="",eps_electron_optical_filename=""):
 
         # Useful units and constants
         self.eVtoK = 11604.5221
@@ -129,6 +129,9 @@ class darkelf(object):
             Zion_filename=target+"Ga_Zion.dat" # for now only using Ga in Migdal, needs to be generalized.
           else:
             Zion_filename=target+"_Zion.dat"
+        
+        if eps_electron_optical_filename=="":
+            eps_electron_optical_filename=self.target+"_eps_electron_opticallimit.dat"  
 
         # Set parameters that load data files
         self.filename = filename
@@ -137,6 +140,7 @@ class darkelf(object):
         self.dos_filename = dos_filename
         self.fd_filename = fd_filename
         self.Zion_filename = Zion_filename
+        self.eps_electron_optical_filename=eps_electron_optical_filename
 
         # Default is to use tabulated dielectric functions, assuming they are available.
         print(" .... Loading files for " + self.target)
@@ -145,6 +149,8 @@ class darkelf(object):
         self.load_epsilon_grid(self.eps_data_dir,self.filename)
         # Load epsilon data in phonon regime
         self.load_epsilon_phonon(self.eps_data_dir,self.phonon_filename)
+        # Load epsilon data for electrons in optical limit
+        self.load_eps_electron_opticallimit(self.eps_data_dir,self.eps_electron_optical_filename)
         # Load Atomic Migdal calculation from Ibe et al.
         self.load_Migdal_FAC(self.eps_data_dir)
         # Load momentum dependent effective ion charge Zion(k) for Migdal
@@ -181,7 +187,8 @@ class darkelf(object):
 
     ############################################################################################
 
-    from .epsilon import load_epsilon_grid, load_epsilon_phonon, load_Zion
+    from .epsilon import load_epsilon_grid, load_epsilon_phonon, load_eps_electron_opticallimit 
+    from .epsilon import load_Zion
     from .epsilon import eps1_electrongas, eps1, eps2_electrongas, eps2, elf
 
     from .fnomega import Fn_integrand, Fn_vegas, load_phonon_dos, load_Fn

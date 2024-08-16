@@ -88,6 +88,33 @@ def load_epsilon_phonon(self,datadir,filename):
 
     return
 
+def load_eps_electron_opticallimit(self,datadir,filename):
+  
+  optical_path = datadir + self.target+'/'+ filename
+  
+  if (not os.path.exists(optical_path)):
+    print(f"Warning, {file} does not exist! dielectric function in optical limit not loaded. Needed for absorption calculations in superconductors.")
+    self.eps_electron_opticallimit_loaded=False
+  else:
+    self.eps_electron_opticallimit_loaded=True
+    
+    with open(optical_path) as f:
+      citation = f.readline().replace("\n","")
+      print("optical data taken or calculated from "+citation)
+    
+      opticaldat = np.loadtxt(optical_path,skiprows=1).T
+      print("Loaded " + filename + " for absorption calculations in superconductors")
+      
+      self.eps1_electron_optical = interp1d(opticaldat[0],opticaldat[1],\
+            fill_value=(opticaldat[1][0],opticaldat[1][-1]),bounds_error=False)
+      self.eps2_electron_optical=interp1d(opticaldat[0],opticaldat[2],\
+                                          fill_value=0.0,bounds_error=False)
+      self.om_electron_optical_range = [ min(opticaldat[0]), max(opticaldat[0]) ]
+    
+    
+    
+  
+  
 
 def load_Zion(self,datadir):
 
@@ -147,7 +174,7 @@ def eps1(self,omega,k,method="grid"):
         energy in eV
     k: float
         energy in eV
-    method = "grid" (using the grid loaded in filename), "Lindhard" (free electron gas), or "phonon"
+    method = "grid" (using the grid loaded in filename), "Lindhard" (free electron gas), "phonon" for phonon absorption data, or "optical" of electron absorption data
     """
 
     scalar_input = np.isscalar(omega)
@@ -166,6 +193,12 @@ def eps1(self,omega,k,method="grid"):
         return 0
       else:
         eps1=[self.eps1_phonon(om) for om in omega]
+    elif(method=='optical'):
+      if(hasattr(self, "eps1_electron_optical")==False):
+        print("Error, eps for electron frequencies not loaded. Need to set eps_electron_optical_filename.")
+        return 0
+      else:
+        eps1=[self.eps1_electron_optical(om) for om in omega]    
     else:
         print("Error, unknown method. Please choose 'grid' or 'Lindhard'")
     if(scalar_input):
@@ -183,7 +216,7 @@ def eps2(self,omega,k,method="grid"):
         energy in eV
     k: float
         energy in eV
-    method = "grid" (using the grid loaded in filename), "Lindhard" (free electron gas), or "phonon"
+    method = "grid" (using the grid loaded in filename), "Lindhard" (free electron gas), "phonon" for phonon absorption data, or "optical" of electron absorption data
     """
     scalar_input = np.isscalar(omega)
     omega = np.atleast_1d(omega)
@@ -201,6 +234,12 @@ def eps2(self,omega,k,method="grid"):
         return 0
       else:
         eps2=[self.eps2_phonon(om) for om in omega]
+    elif(method=='optical'):
+      if(hasattr(self, "eps2_electron_optical")==False):
+        print("Error, eps for electron frequencies not loaded. Need to set eps_electron_optical_filename.")
+        return 0
+      else:
+        eps2=[self.eps2_electron_optical(om) for om in omega]        
     else:
         print("Error, unknown method. Please choose 'grid' or 'Lindhard'")
 
@@ -222,6 +261,7 @@ def elf(self,omega,k,method="grid"):
         energy in eV
     k: float
         energy in eV
-    method = "grid" (using the grid loaded in filename), "Lindhard" (free electron gas), or "phonon"
+    method = "grid" (using the grid loaded in filename), "Lindhard" (free electron gas), "phonon" for phonon absorption data, or "optical" of electron absorption data
     """
     return self.eps2(omega,k,method=method)/(self.eps1(omega,k,method=method)**2 + self.eps2(omega,k,method=method)**2)
+  
