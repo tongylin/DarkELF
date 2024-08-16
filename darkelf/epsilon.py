@@ -93,7 +93,7 @@ def load_eps_electron_opticallimit(self,datadir,filename):
   optical_path = datadir + self.target+'/'+ filename
   
   if (not os.path.exists(optical_path)):
-    print(f"Warning, {file} does not exist! dielectric function in optical limit not loaded. Needed for absorption calculations in superconductors.")
+    print(f"Warning, {filename} does not exist! dielectric function in optical limit not loaded. Needed for absorption calculations in superconductors.")
     self.eps_electron_opticallimit_loaded=False
   else:
     self.eps_electron_opticallimit_loaded=True
