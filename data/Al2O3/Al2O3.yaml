@@ -14,4 +14,5 @@ atoms: ['Al','O']
 Avec: [27., 16.]
 cLAkms: 11. # Approx, need to check for source, also direction dependent since non-isotropic
 lattice_spacing :  13.11 # This is used to calculate qBZ in isotropic limit, I just took it to be the larger spacing.
+unitcell_anisotropic: {'Al_a':{'A':27.,'mult':4},'O_a':{'A':16.,'mult':2},'O_b':{'A':16.,'mult':2},'O_c':{'A':16.,'mult':2}}
 unitcell: {'Al':{'A': 27., 'mult':2}, 'O':{'A': 16., 'mult':3}}

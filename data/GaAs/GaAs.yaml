@@ -17,3 +17,4 @@ cTAkms: 3.1 # km/s
 atoms: ['Ga', 'As'] # names of atoms
 Avec: [69, 75] # Atomic masses
 unitcell: {'Ga':{'A': 69., 'mult':1}, 'As':{'A': 75., 'mult':1}}
+unitcell_anisotropic: {'Ga':{'A': 69., 'mult':1}, 'As':{'A': 75., 'mult':1}}
