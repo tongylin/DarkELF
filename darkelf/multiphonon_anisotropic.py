@@ -63,10 +63,13 @@ def debye_waller_vector_anisotropic(self,q,theta,phi):
         num_d = len(self.atoms_anisotropic) #number of unique atoms
         th,ph = np.meshgrid(theta,phi,indexing='ij')
         q_cart = np.array([np.sin(th)*np.cos(ph),np.sin(th)*np.sin(ph),np.cos(th)]) #vector q in cartesian
-        D_d_q_array = np.moveaxis(np.einsum('i...,dijk,j...->dk...',q_cart,self.D_d_ij_tensor,q_cart),1,-1) # swap axes to ensure indexed properly
+
+        D_d_q_array = np.moveaxis(np.einsum('i...,dijk,j...->dk...',q_cart,self.D_d_ij_tensor,q_cart),1,-1) 
+        # swap axes to ensure indexed properly -- move (d,omega,theta,phi) to (d,theta,phi,omega)
         
+        # indexing is (d, q, theta, phi)
         W_d_array = np.array([[qi**2 / (4*self.mN_vector[d]) * np.trapz(\
-        D_d_q_array[d]/self.phonon_DoS_anisotropic[0],self.phonon_DoS_anisotropic[0])for qi in q]for d in range(num_d)])
+            D_d_q_array[d]/self.phonon_DoS_anisotropic[0],self.phonon_DoS_anisotropic[0]) for qi in q] for d in range(num_d)])
 
         return W_d_array
     elif(isinstance(q,(np.ndarray,float)) and isinstance(theta,(np.ndarray,float)) and isinstance(phi,(np.ndarray,float))):
@@ -157,6 +160,7 @@ def structure_factor_anisotropic(self,q_grid,theta_grid,phi_grid,omega_grid,min_
     di,th,ph,om = np.meshgrid(np.arange(num_d),theta_grid,phi_grid,omega_grid,indexing='ij')
 
     F_n_d = np.array([self.Fn_interpolations_anisotropic[n]((di,th,ph,om)) for n in range(min_n,max_n+1)])
+    # note default meshgrid is 'xy' ordering so ordering will be q n d here.
     n,q,m = np.meshgrid(np.arange(min_n,max_n+1),q_grid,mass_array)
 
     # Effective coupling (cannot perform dark_photon calculations for now)
@@ -305,7 +309,7 @@ def modulation_fraction_anisotropic(self,t,threshold,sigman=1e-38,dark_photon=Fa
 def num_events_modulation_anisotropic(self,threshold,sigman=1e-38,dark_photon=False):
     """
     Computes the expected exposure N required to observe a daily modulation using cosine approximation
-    of standard deviation.
+    of the modulation.
     """
     
     time_array = np.linspace(0,24,10)
@@ -319,6 +323,7 @@ def num_events_modulation_anisotropic(self,threshold,sigman=1e-38,dark_photon=Fa
     return N_ev
 
 # gives cross section to see a modulation at a 2 sigma level for fixed mass and energy threshold
+# note: assumes kg-year exposure
 def sigma_modulation_anisotropic(self,threshold,sigman=1e-38,dark_photon=False):
     time_array = np.linspace(0,24,10)
     rates = np.array([self.R_multiphonons_anisotropic(t,threshold,sigman,dark_photon) for t in time_array])
@@ -402,9 +407,10 @@ def v_minus_vector(self,q_grid,theta,phi,omega,t):
     """
 
     q,th,p,w = np.meshgrid(q_grid,theta,phi,omega,indexing='ij')
+    # shape: (3, q, theta, phi, omega)
     q_hat = np.array([np.sin(th)*np.cos(p),np.sin(th)*np.sin(p),np.cos(th)])
 
-    v_minus_val = np.einsum('iqOpw,i-> qOpw', q_hat,v_earth_t(self,t),optimize='optimal') + q/(2*self.mX) + w/q
+    v_minus_val = np.einsum('iqtpw,i-> qtpw', q_hat,v_earth_t(self,t),optimize='optimal') + q/(2*self.mX) + w/q
 
     return np.minimum(v_minus_val,np.tile(self.vesc,(len(q),len(theta),len(phi),len(omega))))
 
