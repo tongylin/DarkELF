@@ -1,4 +1,5 @@
-# Format: m_X (MeV), sigma_n
+# Format: m_X (MeV), sigma_n (cm^2)
+# P. Adari et al. (SENSEI), (2023), arXiv:2312.13342 [astro-ph.CO]: Constraints from PandaX-4T, XENON1T and SENSEI@SNOLAB
 1.190908868915023 2.193300662054289e-28
 1.2977048202221826 9.262370089580119e-29
 1.3662868458591337 5.15402383495641e-29

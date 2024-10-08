@@ -1,4 +1,6 @@
-# Format: m_X (MeV), sigma_n
+# Format: m_X (MeV), sigma_n (cm^2)
+# P. Adari et al. (SENSEI), (2023), arXiv:2312.13342 [astro-ph.CO], E. Aprile et al. (XENON), Phys. Rev. Lett. 123, 241803
+#(2019), arXiv:1907.12771 [hep-ex]: Constraints from XENON1T, SENSEI@SNOLAB
 2.755158274323873 1.7414107182118582e-28
 3.6362346657327027 4.856333373804037e-29
 5.630549411464375 1.0830837627087232e-29

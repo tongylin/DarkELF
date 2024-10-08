@@ -1,4 +1,5 @@
-# Format: m_X (MeV), sigma_e
+# Format: m_X (MeV), sigma_e (cm^2)
+#  T. Emken, R. Essig, and H. Xu, “Solar reflection of dark matter with dark-photon mediators,” (2024), arXiv:2404.10066 [hep-ph]: Constraints from XENON1T
 0.001029153256805295 1.1021825252050271e-35
 0.0011095142032878625 7.621531580732946e-36
 0.0011520755362444154 6.613365648442134e-36

@@ -1,4 +1,5 @@
-# Format: m_X (MeV), sigma_e
+# Format: m_X (MeV), sigma_e (cm^2)
+# P. Adari et al. (SENSEI), (2023), arXiv:2312.13342 [astro-ph.CO]: Constraints from SENSEI@SNOLAB
 0.6389679101035104 9.047357242349349e-32
 0.680630136356081 5.087702861133235e-32
 0.7249267366650348 3.162277660168405e-32
