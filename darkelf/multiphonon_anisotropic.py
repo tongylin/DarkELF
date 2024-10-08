@@ -64,7 +64,6 @@ def debye_waller_vector_anisotropic(self,q,theta,phi):
         th,ph = np.meshgrid(theta,phi,indexing='ij')
         q_cart = np.array([np.sin(th)*np.cos(ph),np.sin(th)*np.sin(ph),np.cos(th)]) #vector q in cartesian
         D_d_q_array = np.moveaxis(np.einsum('i...,dijk,j...->dk...',q_cart,self.D_d_ij_tensor,q_cart),1,-1) # swap axes to ensure indexed properly
-        print(np.shape(D_d_q_array))    
         
         W_d_array = np.array([[qi**2 / (4*self.mN_vector[d]) * np.trapz(\
         D_d_q_array[d]/self.phonon_DoS_anisotropic[0],self.phonon_DoS_anisotropic[0])for qi in q]for d in range(num_d)])
