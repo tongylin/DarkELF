@@ -212,7 +212,7 @@ def sigma_multiphonons_anisotropic(self,t,threshold,sigman=1.e-38,N_ev=3,dark_ph
 
 
 # Calculates full rate integral for given parameters by integrating over omega
-def R_multiphonons_anisotropic(self,t,threshold,sigman=1.e-38,dark_photon=False):
+def R_multiphonons_anisotropic(self,t,threshold,N_angular=40,sigman=1.e-38,dark_photon=False):
     """
     Returns rate for DM scattering with a harmonic lattice with full anisotropic structure factor, 
     including multiphonon contributions but excluding the coherent single phonon contribution
@@ -222,6 +222,8 @@ def R_multiphonons_anisotropic(self,t,threshold,sigman=1.e-38,dark_photon=False)
     t: float in [hr]
       time of day, between 0 and 24
     threshold: float in [eV]
+    N_angular: float
+        Number of theta,phi sampling points in integral. Default of 40.
     sigma_n: float
         DM-nucleon cross section in [cm^2], defined with respect to the reference momentum of q0. (q0 is specified by the 'update_params' function)
     Outputs
@@ -236,7 +238,7 @@ def R_multiphonons_anisotropic(self,t,threshold,sigman=1.e-38,dark_photon=False)
     n_max = len(self.Fn_interpolations_anisotropic) #number of phonons precomputed
 
     # angular sampling points
-    n_points_angular = 20
+    n_points_angular = N_angular
 
     theta_limit_lower = 0.
     theta_limit_upper = np.pi
@@ -341,7 +343,7 @@ def sigma_modulation_anisotropic(self,threshold,sigman=1e-38,dark_photon=False):
 
 # Calculate dR_domega_dtheta_dphi over a grid of q values. Returns a 3d array indexed by theta, phi, omega
 def dR_dtheta_dphi_domega(self,theta_grid,phi_grid,omega,t,sigman,n_min,n_max,dark_photon=False):
-    n_points = 100
+    n_points = 200
     if omega[0] > self.omegaDMmax:
         return np.zeros((len(theta_grid),len(phi_grid),len(omega)))
     
@@ -349,13 +351,11 @@ def dR_dtheta_dphi_domega(self,theta_grid,phi_grid,omega,t,sigman,n_min,n_max,da
         /((self.rhoT/(1000*self.eVtokg))*self.eVcm**3 * self.mX*self.eVtokg * \
           (2*np.pi)**3 * (self.muxnucleon**2)*self.eVcm**2)
     
-    
     omega_min = omega[0]
     # integration limits on q
     q_limit_lower=  max(self.qBZ,self.qmin(omega_min))
     q_limit_upper = self.qmax(omega_min)
-    q_impulse_approx = max(2*np.sqrt(2*self.mN_vector/self.omega_bar_inverse_anisotropic))
-
+    q_impulse_approx = max(4*np.sqrt(2*self.mN_vector/self.omega_bar_inverse_anisotropic))
     
     if q_limit_lower >= q_limit_upper:
 
