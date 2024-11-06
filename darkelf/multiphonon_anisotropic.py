@@ -237,16 +237,13 @@ def R_multiphonons_anisotropic(self,t,threshold,N_angular=40,sigman=1.e-38,dark_
     n_min = max(int(threshold/self.dos_omega_range_anisotropic[1]),1) # Ensure that we don't consider n=0
     n_max = len(self.Fn_interpolations_anisotropic) #number of phonons precomputed
 
-    # angular sampling points
-    n_points_angular = N_angular
-
     theta_limit_lower = 0.
     theta_limit_upper = np.pi
-    theta_range = np.linspace(theta_limit_lower,theta_limit_upper,n_points_angular)#Use 20 sampling points for theta
+    theta_range = np.linspace(theta_limit_lower,theta_limit_upper,N_angular)#Use default 40 sampling points for theta
 
     phi_limit_lower = 0.
     phi_limit_upper = 2*np.pi
-    phi_range = np.linspace(phi_limit_lower,phi_limit_upper,n_points_angular)#Use 20 sampling points for phi
+    phi_range = np.linspace(phi_limit_lower,phi_limit_upper,N_angular)#Use default 40 sampling points for phi
 
     ### Use linear sampling for omega < max phonon energy, log sampling for omega > max phonon energy
     if(threshold < self.dos_omega_range_anisotropic[1]):
@@ -277,7 +274,7 @@ def R_multiphonons_anisotropic(self,t,threshold,N_angular=40,sigman=1.e-38,dark_
     return R_linear + R_log
 
 # Not used by R_multiphonons_anisotropic for speed, but can be called to calculate dR_domega plots
-def _dR_domega_anisotropic(self,omega,t,sigman=1.e-38,dark_photon=False):
+def _dR_domega_anisotropic(self,omega,t,N_angular=40,sigman=1.e-38,dark_photon=False):
 
     
     #n_min = max(int(threshold/self.dos_omega_range_anisotropic[1]),1) # Ensure that we don't consider n=0
@@ -286,11 +283,11 @@ def _dR_domega_anisotropic(self,omega,t,sigman=1.e-38,dark_photon=False):
 
     theta_limit_lower = 0.
     theta_limit_upper = np.pi
-    theta_range = np.linspace(theta_limit_lower,theta_limit_upper,20)#Use 20 sampling points for theta
+    theta_range = np.linspace(theta_limit_lower,theta_limit_upper,N_angular) #Use default 40 sampling points for theta
 
     phi_limit_lower = 0.
     phi_limit_upper = 2*np.pi
-    phi_range = np.linspace(phi_limit_lower,phi_limit_upper,20)#Use 20 sampling points for phi
+    phi_range = np.linspace(phi_limit_lower,phi_limit_upper,N_angular) #Use default 40 sampling points for phi
 
     integrand_vals_dR_domega_dphi = np.einsum('tpw,t->tpw',self.dR_dtheta_dphi_domega(theta_range,phi_range,omega,t,sigman,n_min,n_max,dark_photon),\
                                     np.sin(theta_range),optimize='optimal') #full integrand vals

@@ -53,7 +53,7 @@ def load_Fn_anisotropic(self,datadir=None,dos_filename=None):
 
 #Precompute a 5d array containing F_n values for different directions and atoms
 # Indexed as: n, d, theta, phi, omega
-def F_n_d_precompute_anisotropic(self,datadir=None,dos_filename=None,phonons=10,npoints_omega=1000,npoints_theta=20,npoints_phi=20):
+def F_n_d_precompute_anisotropic(self,datadir=None,dos_filename=None,phonons=20,npoints_omega=1000,npoints_theta=40,npoints_phi=40):
     if(datadir == None):
         datadir = self.eps_data_dir
     if(dos_filename == None):
