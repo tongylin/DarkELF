@@ -16,3 +16,4 @@ LOvec: [0.060]  # eV
 Avec: [28., 28.] # need to clean this up
 atoms: ["Si"]
 unitcell: {'Si':{'A': 28., 'mult':2}}
+unitcell_anisotropic: {'Si_a':{'A': 28., 'mult':2}}

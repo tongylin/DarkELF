@@ -57,6 +57,19 @@ class darkelf(object):
         self.Avec = np.array([self.unitcell[ai]['A'] for ai in self.atoms])
         self.Amult = np.array([self.unitcell[ai]['mult'] for ai in self.atoms])
 
+        # Some of the unit cell dictionaries in the .yaml files have to be modified/expanded 
+        # for the anisotropic case, so these are just used for anisotropic calculations
+        # Check that a material has anisotropic files available by checking if has unitcell_anisotropic attribute
+        if hasattr(self,'unitcell_anisotropic'):
+            self.atoms_anisotropic = list(self.unitcell_anisotropic)
+            # mass of atoms in unit cell
+            self.Avec_anisotropic = np.array([self.unitcell_anisotropic[ai]['A'] for ai in self.atoms_anisotropic])
+            self.Amult_anisotropic = np.array([self.unitcell_anisotropic[ai]['mult'] for ai in self.atoms_anisotropic])
+            self.mN_vector = self.Avec_anisotropic*self.mp
+        else:
+            print('Anisotropic calculations unavailable for ' + self.target)
+        
+
         # !TL - these will become a vector more generally
         # nucleon mass used for Migdal calculation, regular nuclear recoils
         self.mN=self.A*self.mp
@@ -164,6 +177,13 @@ class darkelf(object):
         # tabulate the shake-off probability for the Migdal calculation
         self.tabulate_I()
 
+        # Only load anisotropic files if available for material
+        if hasattr(self,'unitcell_anisotropic'):
+            # load anisotropic density of states
+            self.load_phonon_dos_anisotropic(self.eps_data_dir)
+            # Load precomputed Fn(omega) functions for anisotropic multiphonon calculation
+            self.load_Fn_anisotropic(self.eps_data_dir)
+
         # Set parameters that depend on DM properties
         self.update_params(mX=mX,delta=delta,setdelta=True,mMed=mMed,vesckms=vesckms,v0kms=v0kms,vekms=vekms,q0=q0)
 
@@ -199,6 +219,15 @@ class darkelf(object):
     from .multiphonon import _dR_domega_multiphonons_no_single, _R_multiphonons_prefactor
     from .multiphonon import load_fd_darkphoton
     from .multiphonon import debye_waller, _debye_waller_scalar
+
+    from .fnomega_anisotropic import load_phonon_dos_anisotropic,F_n_d_precompute_anisotropic,F_n_omega_anisotropic
+    from .fnomega_anisotropic import load_Fn_anisotropic, omega_bar_anisotropic_func, omega_bar_inverse_anisotropic_func
+
+    from .multiphonon_anisotropic import debye_waller_anisotropic, debye_waller_vector_anisotropic, impulse_approximation_anisotropic
+    from .multiphonon_anisotropic import structure_factor_anisotropic, R_multiphonons_anisotropic, sigma_multiphonons_anisotropic
+    from .multiphonon_anisotropic import dR_dtheta_dphi_domega, kinematic_function_vector, _dR_domega_anisotropic
+    from .multiphonon_anisotropic import modulation_fraction_anisotropic, num_events_modulation_anisotropic, sigma_modulation_anisotropic
+
 
     from .electron import R_electron, dRdomega_electron, dRdomegadk_electron
     from .electron import electron_yield, dRdQ_electron
