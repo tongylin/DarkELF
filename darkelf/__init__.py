@@ -9,7 +9,7 @@ import yaml
 
 
 class darkelf(object):
-    def __init__(self, mX = 1e5, mMed = -1, vesckms = 500, v0kms = 220, vekms = 240, delta = 0.0, q0=0.0, gp_gn_ratio_val=1, gp_gn_ratio='g_n/g_p', haxton=False,
+    def __init__(self, mX = 1e5, mMed = -1, vesckms = 500, v0kms = 220, vekms = 240, delta = 0.0, q0=0.0, gp_gn_ratio_val=1, gp_gn_ratio='g_n/g_p', nuclear_recoil=False,
         target='Ge',targetyaml='',filename="", phonon_filename="",
         eps_data_dir = os.path.dirname(__file__)+"/../data/",
         dos_filename="",fd_filename="",Zion_filename=""):
@@ -164,7 +164,7 @@ class darkelf(object):
         self.tabulate_I()
 
         # Set parameters that depend on DM properties
-        self.update_params(mX=mX,delta=delta,setdelta=True,mMed=mMed,vesckms=vesckms,v0kms=v0kms,vekms=vekms,q0=q0, gp_gn_ratio_val=gp_gn_ratio_val, gp_gn_ratio=gp_gn_ratio, haxton=haxton)
+        self.update_params(mX=mX,delta=delta,setdelta=True,mMed=mMed,vesckms=vesckms,v0kms=v0kms,vekms=vekms,q0=q0, gp_gn_ratio_val=gp_gn_ratio_val, gp_gn_ratio=gp_gn_ratio, nuclear_recoil=nuclear_recoil)
 
         # Characteristic momenta where many phonons become important (take maximum if two distinct atoms)
         if hasattr(self, 'omega_bar'):
@@ -201,7 +201,7 @@ class darkelf(object):
 
     from .multiphonon_spin_dependent import sigma_multiphonons_SD, R_multiphonons_SD
     from .multiphonon_spin_dependent import _dR_domega_multiphonons_SD, _R_multiphonons_prefactor_SD
-    from .multiphonon_spin_dependent import _dR_domega_Haxton_SD
+    from .multiphonon_spin_dependent import _dR_domega_nuclear_recoil_SD
 
     from .electron import R_electron, dRdomega_electron, dRdomegadk_electron
     from .electron import electron_yield, dRdQ_electron
@@ -232,7 +232,8 @@ class darkelf(object):
     #    by specifying the parameter to update
     def update_params(self, mX = 0, delta = 0, setdelta=False, mMed = -1,
                         vesckms = 0, v0kms = 0, vekms = 0, mediator = '', q0 = 0.0,
-                        SD_op = 'Of4', gp_gn_ratio_val = 1, gp_gn_ratio = 'g_n/g_p', haxton=False):
+                        SD_op = "a", gp_gn_ratio_val = 1, set_gp_gn_ratio_val = True,
+                        gp_gn_ratio = 'g_n/g_p', nuclear_recoil=False):
         """
         Function to update dark matter parameters used in the class.
         If the value is set to zero or not set in the arguments, then that means no changes.
@@ -261,7 +262,7 @@ class darkelf(object):
             Specifies whether the massive or massless mediator limit is used. This flag is not used if the mediator mass is specified explicitly with the "mMed" flag
         q0: float
             choice of reference momentum to define the NR mediator form factor. Default is mX*v0 if not specified
-        SD_op: string 'Of3' or 'Of4' or 'Of8'
+        SD_op: string "phi" or "a" or "A'"
             Used in multiphonon_spin_dependent.py
             Selects an EFT operator from those implemented.
         gp_gn_ratio_val: float
@@ -270,6 +271,8 @@ class darkelf(object):
         gp_gn_ratio: string 'g_n/g_p' or 'g_p/g_n'
             Used in multiphonon_spin_dependent.py
             Specifies whether the ratio has g_p or g_n as the numerator.
+        nuclear_recoil: boolean
+            If true, will return the cross section assuming pure nuclear recoil.
         """
 
         if(mX > 0):
@@ -322,14 +325,26 @@ class darkelf(object):
         # sets the DM-Nucleon operator
         self.SD_op = SD_op
 
-        self.haxton = haxton
+        self.nuclear_recoil = nuclear_recoil
 
         # Sets the factor that is isotope averaged (f_d^2 <S^2> / m_d^2) based
         # on the ratio of g_p and g_n and which one is on top
         if self.unitcell[self.atoms[0]].get('isotopes') != None:
+            if (self.SD_op == "phi" or self.SD_op == "a") and set_gp_gn_ratio_val:
+                def gn_over_gp(ma):
+                    gp_withoutcGG =  np.abs(0.000397682 - (7.88551*10**(-6))/(ma**2 - 0.0182188))
+                    gn_withoutcGG = np.abs(0.000398669 + (7.90508*10**(-6))/(ma**2 - 0.0182188))
+                    return gn_withoutcGG/gp_withoutcGG
+
+                if gp_gn_ratio == 'g_n/g_p':
+                    gp_gn_ratio_val = gn_over_gp(mMed)
+                elif gp_gn_ratio == 'g_p/g_n':
+                    gp_gn_ratio_val = 1 / gn_over_gp(mMed)
+                else:
+                    print('Set a form of the ratio between g_n and g_p in the yaml file. The denominator should be the coupling constant with which you wish to plot the cross section.')
             self.mvec = np.zeros(len(self.atoms))
             self.isotope_averaged_factors = np.zeros(len(self.atoms))
-            self.isotope_averaged_factors_haxton = np.zeros(len(self.atoms))
+            self.isotope_averaged_factors_NR = np.zeros(len(self.atoms))
             for i, ai in enumerate(self.atoms):
                 for j in range(len(self.unitcell[ai]['isotopes'])):
                     frac = self.unitcell[ai]['isotopes'][j]['frac']
@@ -348,12 +363,11 @@ class darkelf(object):
                     # self.f_d_vec[i] += frac * self.unitcell[ai]['isotopes'][j]['f_d']
                     self.mvec[i] += self.mp * frac * self.unitcell[ai]['isotopes'][j]['A']
 
-                    if (self.SD_op == 'Of3') or (self.SD_op == 'Of4') or (self.SD_op == 'Of8'):
-                        self.isotope_averaged_factors[i] += frac * (1/3. * atomic_spin * (1. + atomic_spin)) * f_d**2
+                    if (self.SD_op == "phi") or (self.SD_op == "a") or (self.SD_op == "A'") or (self.SD_op == "double A'"):
+                        # self.isotope_averaged_factors[i] += frac * (1/3. * atomic_spin * (1. + atomic_spin)) * f_d**2
+                        self.isotope_averaged_factors[i] += frac * (atomic_spin * (1. + atomic_spin)) * f_d**2
                     else:
                         raise Exception("This spin dependent operator has not yet been defined")
-                    if self.haxton:
-                        self.isotope_averaged_factors_haxton[i] += frac * atomic_spin * (1. + atomic_spin) * f_d**2
 
             self.gp_gn_ratio = gp_gn_ratio
             self.gp_gn_ratio_val = gp_gn_ratio_val
@@ -364,11 +378,7 @@ class darkelf(object):
         return (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
 
     def Fmed_nucleus_SD(self, q):
-        if self.SD_op == 'Of3': # this corresponds to a nonrelativistic interaction q.S_N
-            return (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
-        elif self.SD_op == 'Of4': # this corresponds to a nonrelativistic interaction (q.S_X)(q.S_N)
-            return q/self.q0 * (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
-        elif self.SD_op == 'Of8': # this corresponds to a nonrelativistic interaction S_N.S_X
+        if (self.SD_op == "phi") or (self.SD_op == "a") or (self.SD_op == "A'") or (self.SD_op == "double A'"):
             return (self.q0**2 + self.mMed**2)/(q**2 + self.mMed**2)
         else:
             raise Exception("This spin dependent operator has not yet been defined")
