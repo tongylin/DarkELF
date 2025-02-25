@@ -232,7 +232,7 @@ class darkelf(object):
     #    by specifying the parameter to update
     def update_params(self, mX = 0, delta = 0, setdelta=False, mMed = -1,
                         vesckms = 0, v0kms = 0, vekms = 0, mediator = '', q0 = 0.0,
-                        SD_op = "a", gp_gn_ratio_val = 1, set_gp_gn_ratio_val = True,
+                        SD_op = "A'", gp_gn_ratio_val = 1, set_gp_gn_ratio_val = True,
                         gp_gn_ratio = 'g_n/g_p', nuclear_recoil=False):
         """
         Function to update dark matter parameters used in the class.
