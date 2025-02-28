@@ -232,7 +232,7 @@ class darkelf(object):
     #    by specifying the parameter to update
     def update_params(self, mX = 0, delta = 0, setdelta=False, mMed = -1,
                         vesckms = 0, v0kms = 0, vekms = 0, mediator = '', q0 = 0.0,
-                        SD_op = "A'", gp_gn_ratio_val = 1, set_gp_gn_ratio_val = True,
+                        SD_op = "A'", gp_gn_ratio_val = 1, set_gp_gn_ratio_val = False,
                         gp_gn_ratio = 'g_n/g_p', nuclear_recoil=False):
         """
         Function to update dark matter parameters used in the class.
@@ -330,7 +330,7 @@ class darkelf(object):
         # Sets the factor that is isotope averaged (f_d^2 <S^2> / m_d^2) based
         # on the ratio of g_p and g_n and which one is on top
         if self.unitcell[self.atoms[0]].get('isotopes') != None:
-            if (self.SD_op == "phi" or self.SD_op == "a") and set_gp_gn_ratio_val:
+            if (self.SD_op == "phi" or self.SD_op == "a") and not set_gp_gn_ratio_val:
                 def gn_over_gp(ma):
                     gp_withoutcGG =  np.abs(0.000397682 - (7.88551*10**(-6))/(ma**2 - 0.0182188))
                     gn_withoutcGG = np.abs(0.000398669 + (7.90508*10**(-6))/(ma**2 - 0.0182188))
