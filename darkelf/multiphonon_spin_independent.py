@@ -50,6 +50,7 @@ def sigma_multiphonons_SI(self, threshold, dark_photon=False):
     if dark_photon:
       assert self.fd_loaded, "Error: effective charge not loaded. Cannot perform calculation for dark photon mediator."
 
+    # Add multiphonon contributions (incoherent rate, excluding coherent single phonon) + single phonon 
     rate = self.R_multiphonons_SI(threshold, dark_photon=dark_photon) + self.R_single_phonon(threshold, dark_photon=dark_photon)
     if rate != 0:
         return (3.0*1e-38)/rate

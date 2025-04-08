@@ -123,8 +123,7 @@ def create_Fn_omega(self,datadir=None, dos_filename=None, phonons = 10, npoints=
     phonons: int
         specifies up to how many phonons Fn is calculated for. Default value is 10.
     npoints: int
-        number of omega points to compute Fn grid, default is 250
-        (750 were used for calculations in draft, takes ~four hours)
+        number of omega points to compute Fn grid, default is 1000
 
     """
 
