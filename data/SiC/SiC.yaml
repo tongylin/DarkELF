@@ -15,3 +15,4 @@ atoms: ['Si', 'C']
 cLAkms: 10.9 # km/s (Using elasticity parameters from materialsproject and isotropy)
 lattice_spacing: 4.38 # Angstrom
 unitcell: {'Si':{'A': 28., 'mult':1}, 'C':{'A': 12., 'mult':1}}
+unitcell_anisotropic: {'Si':{'A': 28., 'mult':2}, 'C':{'A': 12., 'mult':2}}

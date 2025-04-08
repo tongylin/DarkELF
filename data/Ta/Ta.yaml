@@ -1,0 +1,13 @@
+rhoT : 16.57  # gram/cm^3
+omegap : 21.5
+alattice : 3.31 # Angstrom
+A : 181
+Z : 73
+E_gap: 0.0
+Zion: 2
+ombar:  # average phonon frequency in eV
+Avec : [181]
+lattice_spacing : 3.31
+cLAkms: 2.0 # need check for ref
+atoms: ['Ta']
+unitcell: {'Ta':{'A': 181., 'mult':1}}

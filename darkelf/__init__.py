@@ -12,7 +12,7 @@ class darkelf(object):
     def __init__(self, mX = 1e5, mMed = -1, vesckms = 500, v0kms = 220, vekms = 240, delta = 0.0, q0=0.0, gp_gn_ratio_val=1, gp_gn_ratio='g_n/g_p', nuclear_recoil=False,
         target='Ge',targetyaml='',filename="", phonon_filename="",
         eps_data_dir = os.path.dirname(__file__)+"/../data/",
-        dos_filename="",fd_filename="",Zion_filename=""):
+        dos_filename="",fd_filename="",Zion_filename="",eps_electron_optical_filename=""):
 
         # Useful units and constants
         self.eVtoK = 11604.5221
@@ -57,6 +57,19 @@ class darkelf(object):
         self.Avec = np.array([self.unitcell[ai]['A'] for ai in self.atoms])
         self.Amult = np.array([self.unitcell[ai]['mult'] for ai in self.atoms])
 
+        # Modified unit cell dictionary used for anisotropic calculations
+        # Check that a material has anisotropic files available by checking if has unitcell_anisotropic attribute
+        if hasattr(self,'unitcell_anisotropic'):
+            self.atoms_anisotropic = list(self.unitcell_anisotropic)
+            # mass of atoms in unit cell
+            self.Avec_anisotropic = np.array([self.unitcell_anisotropic[ai]['A'] for ai in self.atoms_anisotropic])
+            self.Amult_anisotropic = np.array([self.unitcell_anisotropic[ai]['mult'] for ai in self.atoms_anisotropic])
+            self.mN_vector = self.Avec_anisotropic*self.mp
+        else:
+            print('Anisotropic calculations unavailable for ' + self.target)
+        
+        # Mass vector for atoms in unit cell, used for spin-dependent scattering only
+        # This is updated in update_params to sum over the isotopes weighted by their mass fraction
         self.mvec = self.Avec * self.mp
 
 
@@ -134,6 +147,9 @@ class darkelf(object):
             Zion_filename=target+"Ga_Zion.dat" # for now only using Ga in Migdal, needs to be generalized.
           else:
             Zion_filename=target+"_Zion.dat"
+        
+        if eps_electron_optical_filename=="":
+            eps_electron_optical_filename=self.target+"_eps_electron_opticallimit.dat"  
 
         # Set parameters that load data files
         self.filename = filename
@@ -142,6 +158,7 @@ class darkelf(object):
         self.dos_filename = dos_filename
         self.fd_filename = fd_filename
         self.Zion_filename = Zion_filename
+        self.eps_electron_optical_filename=eps_electron_optical_filename
 
         # Default is to use tabulated dielectric functions, assuming they are available.
         print(" .... Loading files for " + self.target)
@@ -150,6 +167,8 @@ class darkelf(object):
         self.load_epsilon_grid(self.eps_data_dir,self.filename)
         # Load epsilon data in phonon regime
         self.load_epsilon_phonon(self.eps_data_dir,self.phonon_filename)
+        # Load epsilon data for electrons in optical limit
+        self.load_eps_electron_opticallimit(self.eps_data_dir,self.eps_electron_optical_filename)
         # Load Atomic Migdal calculation from Ibe et al.
         self.load_Migdal_FAC(self.eps_data_dir)
         # Load momentum dependent effective ion charge Zion(k) for Migdal
@@ -162,6 +181,13 @@ class darkelf(object):
         self.load_Fn(self.eps_data_dir,self.dos_filename)
         # tabulate the shake-off probability for the Migdal calculation
         self.tabulate_I()
+
+        # Only load anisotropic files if available for material
+        if hasattr(self,'unitcell_anisotropic'):
+            # load anisotropic density of states
+            self.load_phonon_dos_anisotropic(self.eps_data_dir)
+            # Load precomputed Fn(omega) functions for anisotropic multiphonon calculation
+            self.load_Fn_anisotropic(self.eps_data_dir)
 
         # Set parameters that depend on DM properties
         self.update_params(mX=mX,delta=delta,setdelta=True,mMed=mMed,vesckms=vesckms,v0kms=v0kms,vekms=vekms,q0=q0, gp_gn_ratio_val=gp_gn_ratio_val, gp_gn_ratio=gp_gn_ratio, nuclear_recoil=nuclear_recoil)
@@ -186,13 +212,12 @@ class darkelf(object):
 
     ############################################################################################
 
-    from .epsilon import load_epsilon_grid, load_epsilon_phonon, load_Zion
+    from .epsilon import load_epsilon_grid, load_epsilon_phonon, load_eps_electron_opticallimit 
+    from .epsilon import load_Zion
     from .epsilon import eps1_electrongas, eps1, eps2_electrongas, eps2, elf
 
-    from .fnomega import Fn_integrand, Fn_vegas, load_phonon_dos, load_Fn
-    from .fnomega import create_Fn_omega
-    from .fnomega import C_ld
-    from .fnomega import debye_waller
+    from .fnomega import load_phonon_dos, load_Fn, create_Fn_omega
+    from .fnomega import C_ld, debye_waller
 
     from .multiphonon_spin_independent import sigma_multiphonons_SI, R_multiphonons_SI, R_single_phonon
     from .multiphonon_spin_independent import _R_single_optical, _R_single_acoustic, _dR_domega_coherent_single
@@ -202,6 +227,15 @@ class darkelf(object):
     from .multiphonon_spin_dependent import sigma_multiphonons_SD, R_multiphonons_SD
     from .multiphonon_spin_dependent import _dR_domega_multiphonons_SD, _R_multiphonons_prefactor_SD
     from .multiphonon_spin_dependent import _dR_domega_nuclear_recoil_SD
+
+    from .fnomega_anisotropic import load_phonon_dos_anisotropic,F_n_d_precompute_anisotropic,F_n_omega_anisotropic
+    from .fnomega_anisotropic import load_Fn_anisotropic, omega_bar_anisotropic_func, omega_bar_inverse_anisotropic_func
+
+    from .multiphonon_anisotropic import debye_waller_anisotropic, debye_waller_vector_anisotropic, impulse_approximation_anisotropic
+    from .multiphonon_anisotropic import structure_factor_anisotropic, R_multiphonons_anisotropic, sigma_multiphonons_anisotropic
+    from .multiphonon_anisotropic import dR_dtheta_dphi_domega, kinematic_function_vector, _dR_domega_anisotropic
+    from .multiphonon_anisotropic import modulation_fraction_anisotropic, num_events_modulation_anisotropic, sigma_modulation_anisotropic
+
 
     from .electron import R_electron, dRdomega_electron, dRdomegadk_electron
     from .electron import electron_yield, dRdQ_electron
