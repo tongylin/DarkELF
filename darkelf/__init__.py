@@ -67,11 +67,6 @@ class darkelf(object):
             self.mN_vector = self.Avec_anisotropic*self.mp
         else:
             print('Anisotropic calculations unavailable for ' + self.target)
-        
-        # Mass vector for atoms in unit cell, used for spin-dependent scattering only
-        # This is updated in update_params to sum over the isotopes weighted by their mass fraction
-        self.mvec = self.Avec * self.mp
-
 
         # !TL - these will become a vector more generally
         # nucleon mass used for Migdal calculation, regular nuclear recoils
@@ -382,11 +377,6 @@ class darkelf(object):
                 else:
                     print('Invalid choice for gp_gn_ratio - must be g_n/g_p or g_p/g_n ')
 
-            # mass vec accounting for isotopes.
-            # !TL - technically, one should maybe average over lambda_d^2 * Jd (Jd + 1) * md^3 FIRST. 
-            #       Given that we are not doing this and the corrections are small, we can also remove this for simplicity
-            #       and just use mvec -> Avec * mp
-            self.mvec = np.zeros(len(self.atoms))
             # vector containing averaged lambda_d^2 * Jd (Jd + 1) 
             self.isotope_averaged_factors = np.zeros(len(self.atoms))
             for i, ai in enumerate(self.atoms):
@@ -403,7 +393,6 @@ class darkelf(object):
                         # In the Odd Group Model, only one of f_n or f_p will be nonzero, so the
                         # ratio of g_n and g_p should not matter. In the shell model, that is not
                         # necessarily the case.
-                    self.mvec[i] += self.mp * frac * self.unitcell[ai]['isotopes'][j]['A']
 
                     self.isotope_averaged_factors[i] += frac * (atomic_spin * (1. + atomic_spin)) * lambda_d**2
 
