@@ -24,6 +24,7 @@ def debye_waller(self, q):
 
 ##############################################################################
 # Calculates the C_ld's using both multiphonon expansion and impulse approximation.
+# Note that here we do NOT include the factor of 2*pi which appears in the structure factor.
 
 def C_ld(self, qrange, omega, d, q_IA_factor = 2):
     """

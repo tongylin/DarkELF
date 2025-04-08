@@ -190,7 +190,8 @@ class darkelf(object):
             self.load_Fn_anisotropic(self.eps_data_dir)
 
         # Set parameters that depend on DM properties
-        self.update_params(mX=mX,delta=delta,setdelta=True,mMed=mMed,vesckms=vesckms,v0kms=v0kms,vekms=vekms,q0=q0, gp_gn_ratio_val=gp_gn_ratio_val, gp_gn_ratio=gp_gn_ratio, nuclear_recoil=nuclear_recoil)
+        self.update_params(mX=mX,delta=delta,setdelta=True,mMed=mMed,vesckms=vesckms,v0kms=v0kms,vekms=vekms,q0=q0,
+                            gp_gn_ratio_val=gp_gn_ratio_val, gp_gn_ratio=gp_gn_ratio)
 
         # Characteristic momenta where many phonons become important (take maximum if two distinct atoms)
         if hasattr(self, 'omega_bar'):
@@ -267,7 +268,7 @@ class darkelf(object):
     def update_params(self, mX = 0, delta = 0, setdelta=False, mMed = -1,
                         vesckms = 0, v0kms = 0, vekms = 0, mediator = '', q0 = 0.0,
                         SD_op = "A'", gp_gn_ratio_val = 1, set_gp_gn_ratio_val = False,
-                        gp_gn_ratio = 'g_n/g_p', nuclear_recoil=False):
+                        gp_gn_ratio = 'g_n/g_p'):
         """
         Function to update dark matter parameters used in the class.
         If the value is set to zero or not set in the arguments, then that means no changes.
@@ -305,8 +306,6 @@ class darkelf(object):
         gp_gn_ratio: string 'g_n/g_p' or 'g_p/g_n'
             Used in multiphonon_spin_dependent.py
             Specifies whether the ratio has g_p or g_n as the numerator.
-        nuclear_recoil: boolean
-            If true, will return the cross section assuming pure nuclear recoil.
         """
 
         if(mX > 0):
@@ -332,6 +331,7 @@ class darkelf(object):
         self.Nfv = (erf(zz) - 2*zz*exp(-zz*zz)/sqrt(pi))*pow(pi,1.5)*self.v0**3
         self.omegaDMmax = self.mX/2.0*(self.vesc + self.veavg)**2
 
+        # Reduced mass
         self.muxN = self.mX*self.mN/(self.mX + self.mN)
         self.muxnucleon = self.mX*self.mp/(self.mX + self.mp)
 
@@ -356,18 +356,23 @@ class darkelf(object):
         if(mMed >= 0):
             self.mMed = mMed
 
+        # Settings for spin-dependent nuclear scattering
+
         # sets the DM-Nucleon operator
         self.SD_op = SD_op
-
-        self.nuclear_recoil = nuclear_recoil
 
         # Sets the factor that is isotope averaged (f_d^2 <S^2> / m_d^2) based
         # on the ratio of g_p and g_n and which one is on top
         if self.unitcell[self.atoms[0]].get('isotopes') != None:
             if (self.SD_op == "phi" or self.SD_op == "a") and not set_gp_gn_ratio_val:
                 def gn_over_gp(ma):
-                    gp_withoutcGG =  np.abs(0.000397682 - (7.88551*10**(-6))/(ma**2 - 0.0182188))
-                    gn_withoutcGG = np.abs(0.000398669 + (7.90508*10**(-6))/(ma**2 - 0.0182188))
+                    # !TL: fa = 1 TeV? Values are slightly off in commented code? 0.938/1e3 * 0.44 = 0.00041272, same for second coeff
+                    #      ma in units of GeV [--> Updated to eV to be consistent with the rest of the code]
+                    #gp_withoutcGG =  np.abs(0.000397682 - (7.88551*10**(-6))/(ma**2 - 0.0182188))
+                    #gn_withoutcGG = np.abs(0.000398669 + (7.90508*10**(-6))/(ma**2 - 0.0182188))
+                    maMeV = ma  / 1e6
+                    gp_withoutcGG =  np.abs(0.00041272 - (8.07284081*10**(-6))/(maMeV**2 - 0.0182188))
+                    gn_withoutcGG = np.abs(0.00039712 + (8.07284081*10**(-6))/(maMeV**2 - 0.0182188))
                     return gn_withoutcGG/gp_withoutcGG
 
                 if gp_gn_ratio == 'g_n/g_p':
@@ -375,33 +380,32 @@ class darkelf(object):
                 elif gp_gn_ratio == 'g_p/g_n':
                     gp_gn_ratio_val = 1 / gn_over_gp(mMed)
                 else:
-                    print('Set a form of the ratio between g_n and g_p in the yaml file. The denominator should be the coupling constant with which you wish to plot the cross section.')
+                    print('Invalid choice for gp_gn_ratio - must be g_n/g_p or g_p/g_n ')
+
+            # mass vec accounting for isotopes.
+            # !TL - technically, one should maybe average over lambda_d^2 * Jd (Jd + 1) * md^3 FIRST. 
+            #       Given that we are not doing this and the corrections are small, we can also remove this for simplicity
+            #       and just use mvec -> Avec * mp
             self.mvec = np.zeros(len(self.atoms))
+            # vector containing averaged lambda_d^2 * Jd (Jd + 1) 
             self.isotope_averaged_factors = np.zeros(len(self.atoms))
-            self.isotope_averaged_factors_NR = np.zeros(len(self.atoms))
             for i, ai in enumerate(self.atoms):
                 for j in range(len(self.unitcell[ai]['isotopes'])):
                     frac = self.unitcell[ai]['isotopes'][j]['frac']
                     atomic_spin = self.unitcell[ai]['isotopes'][j]['atomic_spin']
 
                     if gp_gn_ratio == 'g_n/g_p':
-                        f_d = self.unitcell[ai]['isotopes'][j]['f_p'] + gp_gn_ratio_val * self.unitcell[ai]['isotopes'][j]['f_n']
+                        lambda_d = self.unitcell[ai]['isotopes'][j]['f_p'] + gp_gn_ratio_val * self.unitcell[ai]['isotopes'][j]['f_n']
                     elif gp_gn_ratio == 'g_p/g_n':
-                        f_d = self.unitcell[ai]['isotopes'][j]['f_n'] + gp_gn_ratio_val * self.unitcell[ai]['isotopes'][j]['f_p']
+                        lambda_d = self.unitcell[ai]['isotopes'][j]['f_n'] + gp_gn_ratio_val * self.unitcell[ai]['isotopes'][j]['f_p']
                     else:
-                        print('Set a form of the ratio between g_n and g_p in the yaml file. The denominator should be the coupling constant with which you wish to plot the cross section.')
+                        print('Invalid choice for gp_gn_ratio - must be g_n/g_p or g_p/g_n ')
                         # In the Odd Group Model, only one of f_n or f_p will be nonzero, so the
                         # ratio of g_n and g_p should not matter. In the shell model, that is not
                         # necessarily the case.
-                    # self.S_d_squared[i] += frac * 1/3 * atomic_spin * (1 + atomic_spin)
-                    # self.f_d_vec[i] += frac * self.unitcell[ai]['isotopes'][j]['f_d']
                     self.mvec[i] += self.mp * frac * self.unitcell[ai]['isotopes'][j]['A']
 
-                    if (self.SD_op == "phi") or (self.SD_op == "a") or (self.SD_op == "A'") or (self.SD_op == "double A'"):
-                        # self.isotope_averaged_factors[i] += frac * (1/3. * atomic_spin * (1. + atomic_spin)) * f_d**2
-                        self.isotope_averaged_factors[i] += frac * (atomic_spin * (1. + atomic_spin)) * f_d**2
-                    else:
-                        raise Exception("This spin dependent operator has not yet been defined")
+                    self.isotope_averaged_factors[i] += frac * (atomic_spin * (1. + atomic_spin)) * lambda_d**2
 
             self.gp_gn_ratio = gp_gn_ratio
             self.gp_gn_ratio_val = gp_gn_ratio_val
