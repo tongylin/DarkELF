@@ -365,9 +365,9 @@ class darkelf(object):
                     #      ma in units of GeV [--> Updated to eV to be consistent with the rest of the code]
                     #gp_withoutcGG =  np.abs(0.000397682 - (7.88551*10**(-6))/(ma**2 - 0.0182188))
                     #gn_withoutcGG = np.abs(0.000398669 + (7.90508*10**(-6))/(ma**2 - 0.0182188))
-                    maMeV = ma  / 1e6
-                    gp_withoutcGG =  np.abs(0.00041272 - (8.07284081*10**(-6))/(maMeV**2 - 0.0182188))
-                    gn_withoutcGG = np.abs(0.00039712 + (8.07284081*10**(-6))/(maMeV**2 - 0.0182188))
+                    maGeV = ma  / 1e9
+                    gp_withoutcGG =  np.abs(0.00041272 - (8.07284081*10**(-6))/(maGeV**2 - 0.0182188))
+                    gn_withoutcGG = np.abs(0.00039712 + (8.07284081*10**(-6))/(maGeV**2 - 0.0182188))
                     return gn_withoutcGG/gp_withoutcGG
 
                 if gp_gn_ratio == 'g_n/g_p':
