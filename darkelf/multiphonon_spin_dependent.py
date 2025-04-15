@@ -25,7 +25,7 @@ import sys, os
 
 def _R_multiphonons_prefactor_SD(self, sigman):
     # Input sigman in cm^2; output is the rate pre-factor in cm^2
-    # Currently operators phi (scalar mediator) and a (psuedoscalar mediator) have been implemented
+    # Currently operators phi, a, A', and A'_1&A'_2 have been implemented
 
     totalmass = sum(self.Amult * self.Avec * self.mp)
     spin_independent_factor = sigman*((1/totalmass)* (self.rhoX*self.eVcm**3)/(self.mX*(self.muxnucleon)**2))*((1/self.eVcm**2)*(self.eVtoInvYr/self.eVtokg))
