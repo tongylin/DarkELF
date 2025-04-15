@@ -30,15 +30,14 @@ def _R_multiphonons_prefactor_SD(self, sigman):
     totalmass = sum(self.Amult * self.Avec * self.mp)
     spin_independent_factor = sigman*((1/totalmass)* (self.rhoX*self.eVcm**3)/(self.mX*(self.muxnucleon)**2))*((1/self.eVcm**2)*(self.eVtoInvYr/self.eVtokg))
 
-    # !TL - Double check numerical factors
     if self.SD_op == 'phi':
-        return spin_independent_factor * 2 / 3 * self.mp**2 / self.v0**2 / (self.muxnucleon)**2
+        return spin_independent_factor * 1 / 3 * self.mp**2 / self.v0**2 / (self.muxnucleon)**2
     elif self.SD_op == 'a':
-        return spin_independent_factor * 1 / 4 * self.mp**2 * self.mX**2 / self.v0**4 / (self.muxnucleon)**4
+        return spin_independent_factor * 1 / 8 * self.mp**2 * self.mX**2 / self.v0**4 / (self.muxnucleon)**4
     elif self.SD_op == "A'":
-        return spin_independent_factor * 4 / 3
+        return spin_independent_factor * 2 / 3
     elif self.SD_op == "double A'":
-        return spin_independent_factor * 1 / 4 * self.mX**4 / (self.muxnucleon)**4
+        return spin_independent_factor * 1 / 8 * self.mX**4 / (self.muxnucleon)**4
     else:
         raise Exception("This spin dependent operator has not yet been defined")
 
@@ -80,10 +79,10 @@ def R_multiphonons_SD(self, threshold, sigman=1e-38, nuclear_recoil=False):
     threshold: float in [eV]
     sigma_n: float
         DM-nucleon cross section in [cm^2], defined with respect to the reference momentum of q0. (q0 is specified by the 'update_params' function)
-    
+
     nuclear_recoil: boolean
         If true, will return the SD cross section assuming pure nuclear recoil.
-    
+
     Outputs
     -------
     rate as function of threshold, in [1/kg/yr]
@@ -144,7 +143,7 @@ def _dR_domega_multiphonons_SD(self, omega, sigman=1e-38, npoints=200, nuclear_r
     if self.SD_op == 'phi':
         dR_domega_dq = S * qrange**3 / self.mp**2 * formfactorsquared * self.etav((qrange/(2*self.mX)) + omega/qrange)
     elif self.SD_op == 'a':
-        dR_domega_dq = S * qrange**5 / self.mp**2 / self.mX**2 * formfactorsquared * self.etav((qrange/(2*self.mX)) + omega/qrange) 
+        dR_domega_dq = S * qrange**5 / self.mp**2 / self.mX**2 * formfactorsquared * self.etav((qrange/(2*self.mX)) + omega/qrange)
     elif (self.SD_op == "A'") or (self.SD_op == "double A'"):
         dR_domega_dq = S * qrange * formfactorsquared * self.etav((qrange/(2*self.mX)) + omega/qrange)
     else:
@@ -164,18 +163,16 @@ def _dR_domega_nuclear_recoil_SD(self, omega, sigman=1e-38):
     muT = mT * self.mX / (self.mX + mT)
     qrange = np.sqrt(2 * mT * omega)
     vmin = qrange / 2 / muT
-    # formfactor = (self.q0**2 + self.mMed**2)/(qrange**2 + self.mMed**2)
+    formfactorsquared = self.Fmed_nucleus_SD(qrange)**2
 
-    # !TL - Typos here? 4/3 should be in R_phi. Also we have 4/3 in R_A' in the draft.
-    # !TL - Can also include F_med^2(q) 
     if self.SD_op == 'a':
-        dR_domega = sigman * 4 / 3 * self.NUCkg * (self.rhoX * self.eVcm**3) / self.mX / self.v0**4  / (self.muxnucleon)**6 * omega**2 * sum(self.Amult * self.etav(vmin) * mT**3 * self.isotope_averaged_factors)
+        dR_domega = sigman * 1 / 2 * self.NUCkg * (self.rhoX * self.eVcm**3) / self.mX / self.v0**4  / (self.muxnucleon)**6 * omega**2 * sum(self.Amult * self.etav(vmin) * mT**3 * self.isotope_averaged_factors * formfactorsquared)
     elif self.SD_op == 'phi':
-        dR_domega = sigman * self.NUCkg * (self.rhoX * self.eVcm**3) / self.mX / self.v0**2  / (self.muxnucleon)**4 * omega * sum(self.Amult * self.etav(vmin) * mT**2 * self.isotope_averaged_factors)
+        dR_domega = sigman * 2 / 3 * self.NUCkg * (self.rhoX * self.eVcm**3) / self.mX / self.v0**2  / (self.muxnucleon)**4 * omega * sum(self.Amult * self.etav(vmin) * mT**2 * self.isotope_averaged_factors * formfactorsquared)
     elif self.SD_op == "A'":
-        dR_domega = sigman * 4 * self.NUCkg * (self.rhoX * self.eVcm**3) / self.mX  / (self.muxnucleon)**2 * sum(self.Amult * self.etav(vmin) * mT * self.isotope_averaged_factors)
+        dR_domega = sigman * 2 / 3 * self.NUCkg * (self.rhoX * self.eVcm**3) / self.mX  / (self.muxnucleon)**2 * sum(self.Amult * self.etav(vmin) * mT * self.isotope_averaged_factors * formfactorsquared)
     elif self.SD_op == "double A'":
-        dR_domega = sigman / 4 * self.NUCkg * (self.rhoX * self.eVcm**3) * self.mX**3  / (self.muxnucleon)**6 * sum(self.Amult * self.etav(vmin) * mT * self.isotope_averaged_factors)
+        dR_domega = sigman / 8 * self.NUCkg * (self.rhoX * self.eVcm**3) * self.mX**3  / (self.muxnucleon)**6 * sum(self.Amult * self.etav(vmin) * mT * self.isotope_averaged_factors * formfactorsquared)
     else:
         raise Exception("This spin dependent operator has not yet been defined")
 
