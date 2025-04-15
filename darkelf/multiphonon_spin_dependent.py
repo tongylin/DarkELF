@@ -30,7 +30,7 @@ def _R_multiphonons_prefactor_SD(self, sigman):
     totalmass = sum(self.Amult * self.Avec * self.mp)
     spin_independent_factor = sigman*((1/totalmass)* (self.rhoX*self.eVcm**3)/(self.mX*(self.muxnucleon)**2))*((1/self.eVcm**2)*(self.eVtoInvYr/self.eVtokg))
 
-    # !TL - Double check numerical factors
+    # !TL - Double check numerical factors - I think there is missing factor of 1/2
     if self.SD_op == 'phi':
         return spin_independent_factor * 2 / 3 * self.mp**2 / self.v0**2 / (self.muxnucleon)**2
     elif self.SD_op == 'a':
@@ -164,18 +164,17 @@ def _dR_domega_nuclear_recoil_SD(self, omega, sigman=1e-38):
     muT = mT * self.mX / (self.mX + mT)
     qrange = np.sqrt(2 * mT * omega)
     vmin = qrange / 2 / muT
-    # formfactor = (self.q0**2 + self.mMed**2)/(qrange**2 + self.mMed**2)
+    formfactor = (self.q0**2 + self.mMed**2)/(qrange**2 + self.mMed**2)
 
-    # !TL - Typos here? 4/3 should be in R_phi. Also we have 4/3 in R_A' in the draft.
-    # !TL - Can also include F_med^2(q) 
+    # !TL - Double check numerical factors - I think there is missing factor of 1/2
     if self.SD_op == 'a':
-        dR_domega = sigman * 4 / 3 * self.NUCkg * (self.rhoX * self.eVcm**3) / self.mX / self.v0**4  / (self.muxnucleon)**6 * omega**2 * sum(self.Amult * self.etav(vmin) * mT**3 * self.isotope_averaged_factors)
+        dR_domega = sigman * self.NUCkg * (self.rhoX * self.eVcm**3) / self.mX / self.v0**4  / (self.muxnucleon)**6 * omega**2 * sum(self.Amult * self.etav(vmin) * mT**3 * self.isotope_averaged_factors * formfactor**2)
     elif self.SD_op == 'phi':
-        dR_domega = sigman * self.NUCkg * (self.rhoX * self.eVcm**3) / self.mX / self.v0**2  / (self.muxnucleon)**4 * omega * sum(self.Amult * self.etav(vmin) * mT**2 * self.isotope_averaged_factors)
+        dR_domega = sigman * 4 / 3 * self.NUCkg * (self.rhoX * self.eVcm**3) / self.mX / self.v0**2  / (self.muxnucleon)**4 * omega * sum(self.Amult * self.etav(vmin) * mT**2 * self.isotope_averaged_factors * formfactor**2)
     elif self.SD_op == "A'":
-        dR_domega = sigman * 4 * self.NUCkg * (self.rhoX * self.eVcm**3) / self.mX  / (self.muxnucleon)**2 * sum(self.Amult * self.etav(vmin) * mT * self.isotope_averaged_factors)
+        dR_domega = sigman * 4 / 3 * self.NUCkg * (self.rhoX * self.eVcm**3) / self.mX  / (self.muxnucleon)**2 * sum(self.Amult * self.etav(vmin) * mT * self.isotope_averaged_factors * formfactor**2)
     elif self.SD_op == "double A'":
-        dR_domega = sigman / 4 * self.NUCkg * (self.rhoX * self.eVcm**3) * self.mX**3  / (self.muxnucleon)**6 * sum(self.Amult * self.etav(vmin) * mT * self.isotope_averaged_factors)
+        dR_domega = sigman / 4 * self.NUCkg * (self.rhoX * self.eVcm**3) * self.mX**3  / (self.muxnucleon)**6 * sum(self.Amult * self.etav(vmin) * mT * self.isotope_averaged_factors * formfactor**2)
     else:
         raise Exception("This spin dependent operator has not yet been defined")
 
