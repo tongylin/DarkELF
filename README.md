@@ -6,7 +6,7 @@ See arXiv [2104.12786](https://arxiv.org/abs/2104.12786) for a description of th
 
 ## Authors
 
-Brian Campbell-Deem, Simon Knapen, Jonathan Kozaczuk, Tongyan Lin, Connor Stratman, and Ethan Villarama
+Brian Campbell-Deem, Stefania Gori, Simon Knapen, Jonathan Kozaczuk, Tongyan Lin, Pankaj Munbodh, Connor Stratman, Bethany Suter, and Ethan Villarama
 
 ## Physics
 ### ELF
@@ -23,7 +23,7 @@ DarkELF can compute the rate for ionizations through the Migdal effect, as deriv
 
 ### DM - phonon scattering
 
-DM - phonon scattering through a light dark photon mediator (arXiv [1712.06598](https://arxiv.org/abs/1712.06598), [1807.10291](https://arxiv.org/abs/1807.10291)) can also be computed in terms of the ELF. DarkELF can also calculate the rate for multiphonon production in dark matter scattering, including daily modulation effects (arXiv [2205.02250](https://arxiv.org/abs/2205.02250) for the isotropic approximation,  [2411.03433](https://arxiv.org/abs/2411.03433) for anisotropic crystals and daily modulation).
+DarkELF can calculate the rate for single phonon and multiphonon excitations. Single phonon scattering through a light dark photon mediator (arXiv [1712.06598](https://arxiv.org/abs/1712.06598), [1807.10291](https://arxiv.org/abs/1807.10291)) can also be computed in terms of the ELF. Multiphonon production in dark matter scattering is included for both spin-independent interactions (arXiv [2205.02250](https://arxiv.org/abs/2205.02250) for the isotropic approximation,  [2411.03433](https://arxiv.org/abs/2411.03433) for anisotropic crystals and daily modulation) and spin-dependent interactions (arXiv [xxxx.xxxxx]).
 
 ### DM - Absorption
 
