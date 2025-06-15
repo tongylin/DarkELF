@@ -361,10 +361,7 @@ class darkelf(object):
         if self.unitcell[self.atoms[0]].get('isotopes') != None:
             if (self.SD_op == "phi" or self.SD_op == "a") and not set_gp_gn_ratio_val:
                 def gn_over_gp(ma):
-                    # !TL: fa = 1 TeV? Values are slightly off in commented code? 0.938/1e3 * 0.44 = 0.00041272, same for second coeff
-                    #      ma in units of GeV [--> Updated to eV to be consistent with the rest of the code]
-                    #gp_withoutcGG =  np.abs(0.000397682 - (7.88551*10**(-6))/(ma**2 - 0.0182188))
-                    #gn_withoutcGG = np.abs(0.000398669 + (7.90508*10**(-6))/(ma**2 - 0.0182188))
+                    # ma in units of eV. Numbers below assume fa = 1 TeV
                     maGeV = ma  / 1e9
                     gp_withoutcGG =  np.abs(0.00041272 - (8.07284081*10**(-6))/(maGeV**2 - 0.0182188))
                     gn_withoutcGG = np.abs(0.00039712 + (8.07284081*10**(-6))/(maGeV**2 - 0.0182188))
