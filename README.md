@@ -23,7 +23,7 @@ DarkELF can compute the rate for ionizations through the Migdal effect, as deriv
 
 ### DM - phonon scattering
 
-DarkELF can calculate the rate for single phonon and multiphonon excitations. Single phonon scattering through a light dark photon mediator (arXiv [1712.06598](https://arxiv.org/abs/1712.06598), [1807.10291](https://arxiv.org/abs/1807.10291)) can also be computed in terms of the ELF. Multiphonon production in dark matter scattering is included for both spin-independent interactions (arXiv [2205.02250](https://arxiv.org/abs/2205.02250) for the isotropic approximation,  [2411.03433](https://arxiv.org/abs/2411.03433) for anisotropic crystals and daily modulation) and spin-dependent interactions (arXiv [xxxx.xxxxx]).
+DarkELF can calculate the rate for single phonon and multiphonon excitations. Single phonon scattering through a light dark photon mediator (arXiv [1712.06598](https://arxiv.org/abs/1712.06598), [1807.10291](https://arxiv.org/abs/1807.10291)) can also be computed in terms of the ELF. Multiphonon production in dark matter scattering is included for both spin-independent interactions (arXiv [2205.02250](https://arxiv.org/abs/2205.02250) for the isotropic approximation,  [2411.03433](https://arxiv.org/abs/2411.03433) for anisotropic crystals and daily modulation) and spin-dependent interactions (arXiv [2506.11191](https://arxiv.org/abs/2506.11191)).
 
 ### DM - Absorption
 
@@ -31,9 +31,17 @@ If the DM is itself a light dark photon, it can be absorbed on phonons (arXiv [1
 
 ## Requirements and Usage
 
-DarkELF requires python 3.6 or higher, equipped with the numpy, scipy, pyyaml and pandas packages. The multiphonon module uses the vegas monte carlo package, which can be found here https://pypi.org/project/vegas/ The tutorial notebooks require a jupyter installation, but this is in general not needed for DarkELF itself.
+DarkELF requires python 3.6 or higher, equipped with the numpy, scipy, pyyaml and pandas packages. The tutorial notebooks require a jupyter installation, but this is in general not needed for DarkELF itself.
 
 The examples folder contains a tutorial jupyter notebook for each of the processes outlined above. Appendix A of the DarkELF paper contains additional explanations of the various functions and settings that are available to the user. 
+
+## Installation
+
+To install the DarkELF package so it can be loaded by other software more easily, run the following commands:
+```
+cd DarkELF
+pip install -e . --user #installs DarkELF as a python package
+```
 
 ## Citation guide
 
