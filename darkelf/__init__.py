@@ -278,7 +278,7 @@ class darkelf(object):
             Currently just used for DM-electron scattering
         mMed: float
             DM-SM mediator mass in eV
-            If zero or not set, then default is mMed = mX (massive mediator for NR scattering)
+            If zero or not set, then default is mMed = 100*mX (massive mediator for NR scattering)
         mediator: string
             options: "massless" or "massive"
             setting mMed overrides this option
