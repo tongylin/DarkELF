@@ -11,5 +11,15 @@ LOvec: [0.04794299, 0.06837487, 0.09794405, 0.15237119] # eV; From Gervais and P
 TOvec: [0.04506666, 0.06137001, 0.09633231, 0.13278238]
 atoms: ['Si','O']
 Avec: [28., 16.]
-cLAkms: 0. # sound speed is needed here to not break rest of code, but should update
-lattice_spacing : 1. # temp needed here to not break rest of code, but should update
+cLAkms: 5.8 # Approx, only used for analytic approx for single phonon excitations
+lattice_spacing : 5.14 # Approx, only used for analytic approx for single phonon excitations
+unitcell: {'Si':{'A': 28., 'mult':1}, 'O':{'A': 16., 'mult':2}}
+unitcell_anisotropic: {'O_a':{'A':16.,'mult':1}, #Used for anisotropic calculations
+                  'O_b':{'A':16.,'mult':1},
+                  'O_c':{'A':16.,'mult':1},
+                  'O_d':{'A':16.,'mult':1},
+                  'O_e':{'A':16.,'mult':1},
+                  'O_f':{'A':16.,'mult':1},
+                  'Si_a':{'A':28.,'mult':1},
+                  'Si_b':{'A':28.,'mult':1},
+                  'Si_c':{'A':28.,'mult':1}}
