@@ -14,4 +14,4 @@ Avec: [69., 14.]
 atoms: ['Ga', 'N']
 cLAkms: 6.5 # km/s (Using elasticity parameters from materialsproject and isotropy)
 lattice_spacing: 4.54 # Angstroms
-unitcell: {'Ga':{'A': 69., 'mult':1}, 'N':{'A': 14., 'mult':1}}
+unitcell: {'Ga':{'A': 69., 'mult':2}, 'N':{'A': 14., 'mult':2}} # Wurtzite crystal structure

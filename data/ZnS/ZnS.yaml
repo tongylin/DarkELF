@@ -13,4 +13,4 @@ atoms: ['Zn', 'S'] # names of atoms
 Avec: [65., 32.]
 cLAkms: 4.9 # km/s (Using elasticity parameters from materialsproject and isotropy)
 lattice_spacing: 5.41 # Angstrom
-unitcell: {'Zn':{'A': 65., 'mult':1}, 'S':{'A': 32., 'mult':1}}
+unitcell: {'Zn':{'A': 65., 'mult':1}, 'S':{'A': 32., 'mult':1}} # Zincblende / sphalerite
