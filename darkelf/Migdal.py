@@ -44,7 +44,7 @@ def load_Migdal_FAC(self,datadir):
 # elastic nuclear recoils, no ionization
 ################################################
 
-def dRdEn_nuclear(self,En,sigma_n=1e-40):
+def dRdEn_nuclear(self,En,sigma_n=1e-38):
     """
     Returns rate for elastic scattering of DM off free nucleus, without ionization
 
@@ -66,11 +66,12 @@ def dRdEn_nuclear(self,En,sigma_n=1e-40):
 
     q = np.sqrt(2*self.mN*En)
     vmin = q/(2.0*self.muxN)
+
     # rate in 1/kg/yr/eV
-    rt = ( self.vesc + self.veavg - vmin) * \
-        self.NTkg * self.rhoX/self.mX * self.A**2*sigma_n * self.c0cms * 86400 * 365.* \
-        self.mN/(2*self.muxnucleon**2) * self.etav(vmin)*  \
-        self.Fmed_nucleus(q)**2 # Form factor mediator
+    rt = np.heaviside( self.vesc + self.veavg - vmin, 0) * \
+        self.NUCkg * self.rhoX/self.mX * sigma_n * self.c0cms * 86400 * 365.* \
+        np.sum( self.Avec**2 * self.Amult * self.Avec * self.mp)/(2*self.muxnucleon**2) * self.etav(vmin)*  \
+        self.Fmed_nucleus_SI(q)**2 # Form factor mediator
     if(scalar_input):
         return rt[0]
     else:
@@ -272,7 +273,7 @@ def _J(self,v,omega,approximation,Enth,sigma_n):
 
       #integrant
       fun=(lambda q, qN: 2.0*Delta*(q**2-q*qN+qN**2+Delta**2)*np.exp(-(q+qN)**2/Delta**2)-2.0*Delta*(q**2+q*qN+qN**2+Delta**2)*np.exp(-(q-qN)**2/Delta**2)+np.pi**0.5*q*(2.0*q**2+3.0*Delta**2)*_incomErf((q-qN)/Delta,(q+qN)/Delta))
-      integrant=(lambda q: self.Fmed_nucleus(q)**2*(fun(q,qNmax(q))-fun(q,qNmin))*(qNmax(q)>qNmin))
+      integrant=(lambda q: self.Fmed_nucleus_SI(q)**2*(fun(q,qNmax(q))-fun(q,qNmin))*(qNmax(q)>qNmin))
 
       #integral
       return prefactor*prefactor_imp*integrate.quad(lambda q: integrant(q),qmin,qmax)[0]
