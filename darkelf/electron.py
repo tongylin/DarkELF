@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import linspace, sqrt, array, pi, cos, sin, dot, exp, sinh, log, log10, cosh, sinh
-from scipy.interpolate import interp1d, interp2d
+from scipy.interpolate import interp1d, RegularGridInterpolator
 from scipy import integrate
 
 ############################################################################################
@@ -129,7 +129,7 @@ def R_electron(self,threshold=-1.0,Emax=-1.0,sigmae=1e-38, kcut = 0, withscreeni
         Emax = np.min([self.ommax,0.5*(self.vesc+self.veavg)**2*self.mX, Emax])
 
     olist=np.linspace(threshold,Emax,200)
-    return integrate.trapz(self.dRdomega_electron(olist,sigmae=sigmae,kcut=kcut, \
+    return np.trapz(self.dRdomega_electron(olist,sigmae=sigmae,kcut=kcut, \
         withscreening=withscreening,method=method), x=olist)
     
 
@@ -180,7 +180,7 @@ def dRdQ_electron(self,Q, sigmae=1e-38, kcut = 0, withscreening=True,method="gri
         else:
             olist=np.linspace(self.E_gap+(Qlist[i]-1.0)*self.e0,self.E_gap+Qlist[i]*self.e0,20)
             deltao=olist[1]-olist[0]
-            dRdQ[i]=integrate.trapz(self.dRdomega_electron(olist,sigmae=sigmae,kcut=kcut, \
+            dRdQ[i]=np.trapz(self.dRdomega_electron(olist,sigmae=sigmae,kcut=kcut, \
                 withscreening=withscreening,method=method), x=olist)
     if scalar_input:
         return dRdQ[0]

@@ -2,7 +2,7 @@ import numpy as np
 from numpy import linspace, sqrt, array, pi, cos, sin, dot, exp, sinh, log, log10, cosh, sinh
 from math import factorial
 from scipy.special import erf, erfc, gamma, gammaincc, exp1
-from scipy.interpolate import interp1d, interp2d
+from scipy.interpolate import interp1d
 from scipy import integrate
 #import vegas
 #import gvar

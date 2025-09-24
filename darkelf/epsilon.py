@@ -4,7 +4,7 @@
 
 import numpy as np
 from numpy import linspace, sqrt, array, pi, cos, sin, dot, exp, sinh, log, log10, cosh, sinh
-from scipy.interpolate import interp1d, interp2d
+from scipy.interpolate import interp1d, RegularGridInterpolator
 from scipy import integrate
 import sys, os, glob
 import pandas as pd
@@ -55,15 +55,88 @@ def load_epsilon_grid(self,datadir,filename):
 
     eps1df = np.array(eps1df)
     eps2df = np.array(eps2df)
-    self.eps1_grid = interp2d(omall,kall,eps1df.T, \
+
+    self._eps1_interp = RegularGridInterpolator((omall,kall),eps1df, \
                 fill_value=1.0,bounds_error=False) # set eps_1 to 1 when going outside the grid
-    self.eps2_grid = interp2d(omall,kall,eps2df.T, \
+    self._eps2_interp = RegularGridInterpolator((omall,kall),eps2df, \
                 fill_value=0.0,bounds_error=False) # set eps_2 to zero when going outside the grid
+
     self.kmin = min(kall)
     self.kmax = max(kall)
     self.ommax = max(omall)
 
     return
+
+def eps1_grid(self, x, y):
+    """
+        Wrapper function for the RegularGridInterpolator above
+        Interpolate eps1 at (x, y).
+        - x can be a scalar or array
+        - y should be a scalar
+      """
+    if self._eps1_interp is None:
+        raise RuntimeError("Interpolator not built. Call build_interpolator first.")
+
+    # detect scalar inputs
+    x_is_scalar = np.isscalar(x)
+    y_is_scalar = np.isscalar(y)
+
+    # ensure array
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+
+    # build full grid of points (like meshgrid)
+    X, Y = np.meshgrid(x, y, indexing="xy")
+    pts = np.column_stack([X.ravel(), Y.ravel()])
+
+    # evaluate interpolator and reshape to (len(y), len(x))
+    vals = self._eps1_interp(pts).reshape(len(y), len(x))
+
+    # shape handling
+    if x_is_scalar and y_is_scalar:
+        return vals.item()                 # scalar
+    elif x_is_scalar:
+        return vals[:, 0]                  # 1D array over y
+    elif y_is_scalar:
+        return vals[0, :]                  # 1D array over x
+    else:
+        return vals                        # full 2D array
+
+def eps2_grid(self, x, y):
+    """
+        Wrapper function for the RegularGridInterpolator above
+        Interpolate eps2 at (x, y).
+        - x can be a scalar or array
+        - y should be a scalar
+    """
+    if self._eps2_interp is None:
+        raise RuntimeError("Interpolator not built. Call build_interpolator first.")
+    
+    # detect scalar inputs
+    x_is_scalar = np.isscalar(x)
+    y_is_scalar = np.isscalar(y)
+
+    # ensure array
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+
+    # build full grid of points (like meshgrid)
+    X, Y = np.meshgrid(x, y, indexing="xy")
+    pts = np.column_stack([X.ravel(), Y.ravel()])
+
+    # evaluate interpolator and reshape to (len(y), len(x))
+    vals = self._eps2_interp(pts).reshape(len(y), len(x))
+
+    # shape handling
+    if x_is_scalar and y_is_scalar:
+        return vals.item()                 # scalar
+    elif x_is_scalar:
+        return vals[:, 0]                  # 1D array over y
+    elif y_is_scalar:
+        return vals[0, :]                  # 1D array over x
+    else:
+        return vals                        # full 2D array
+
 
 def load_epsilon_phonon(self,datadir,filename):
 

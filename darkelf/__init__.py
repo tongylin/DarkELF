@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import linspace, sqrt, array, pi, cos, sin, dot, exp, sinh, log, log10, cosh, sinh
-from scipy.interpolate import interp1d, interp2d
+from scipy.interpolate import interp1d, RegularGridInterpolator
 from scipy import integrate
 from scipy.special import erf, erfc
 import pandas as pd
@@ -210,7 +210,7 @@ class darkelf(object):
 
     from .epsilon import load_epsilon_grid, load_epsilon_phonon, load_eps_electron_opticallimit 
     from .epsilon import load_Zion
-    from .epsilon import eps1_electrongas, eps1, eps2_electrongas, eps2, elf
+    from .epsilon import eps1_grid, eps1_electrongas, eps1, eps2_grid, eps2_electrongas, eps2, elf
 
     from .fnomega import load_phonon_dos, load_Fn, create_Fn_omega
     from .fnomega import C_ld, debye_waller

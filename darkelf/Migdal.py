@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import linspace, sqrt, array, pi, cos, sin, dot, exp, sinh, log, log10, cosh, sinh
-from scipy.interpolate import interp1d, interp2d
+from scipy.interpolate import interp1d
 from scipy.special import erfc, erf
 from scipy import integrate
 import sys, os, glob
@@ -382,4 +382,4 @@ def R_migdal(self,threshold=-1.0,sigma_n=1e-38,Enth=-1.0,method="grid",approxima
           else:
             threshold=2.0*self.E_gap
     olist=np.linspace(threshold,self.ommax,200)
-    return integrate.trapz(self.dRdomega_migdal(olist,Enth=Enth,sigma_n=sigma_n,method=method,approximation=approximation,kcut=kcut,Nshell=Nshell,Zionkdependence=Zionkdependence,fast=fast), x=olist)
+    return np.trapz(self.dRdomega_migdal(olist,Enth=Enth,sigma_n=sigma_n,method=method,approximation=approximation,kcut=kcut,Nshell=Nshell,Zionkdependence=Zionkdependence,fast=fast), x=olist)

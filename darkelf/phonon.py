@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import linspace, sqrt, array, pi, cos, sin, dot, exp, sinh, log, log10, cosh, sinh
-from scipy.interpolate import interp1d, interp2d
+from scipy.interpolate import interp1d
 from scipy import integrate
 
 ############################################################################################
@@ -92,7 +92,7 @@ def R_phonon(self,threshold=-1.0,sigmae=1e-38):
         # Integrate from threshold up to maximum energy of phonon eps data file
         olist=np.linspace(threshold,self.omph_range[1],200)
 
-    return integrate.trapz(self.dRdomega_phonon(olist,sigmae=sigmae),x=olist)
+    return np.trapz(self.dRdomega_phonon(olist,sigmae=sigmae),x=olist)
 
 
 ############################################################################################
@@ -162,4 +162,4 @@ def _R_phonon_Frohlich_branch(self,omegaLO,omegaTO,rho=0,eps_inf=0):
             continue
         vint[i] = self.fv_1d(vi)/(vi)*np.log(Qmax/Qmin)*CFrohsq
 
-    return fac*integrate.trapz(vint,x=vv)
+    return fac*np.trapz(vint,x=vv)
