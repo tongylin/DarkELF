@@ -1,0 +1,15 @@
+[project]
+name = "darkelf"
+version = "0.1.0"
+description = "Compute dark matter scattering in materials"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "ipykernel>=6.31.0",
+    "matplotlib>=3.9.4",
+    "numpy>=2.0.2",
+    "pandas>=2.3.3",
+    "pyyaml>=6.0.3",
+    "scipy>=1.13.1",
+    "seaborn>=0.13.2",
+]

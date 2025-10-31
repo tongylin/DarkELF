@@ -28,8 +28,8 @@ def load_Migdal_FAC(self,datadir):
             lines = [line.rstrip() for line in f]
         # Columns are electron energy [eV] and differential probability dp/dE in units of 1/eV
         FAC_list = []
-        FAC_listname = ['$n=1$', '$n=2, \ell = 0$', '$n=2, \ell=1$', '$n=3, \ell = 0$', \
-            '$n=3, \ell=1$', '$n=3, \ell=2$', '$n=4, \ell = 0$', '$n=4, \ell=1$', '$n=4, \ell=2$', '$n=5, \ell=0$', '$n=5, \ell=1$']
+        FAC_listname = ['$n=1$', r'$n=2, \ell = 0$', r'$n=2, \ell=1$', r'$n=3, \ell = 0$', \
+            r'$n=3, \ell=1$', r'$n=3, \ell=2$', r'$n=4, \ell = 0$', r'$n=4, \ell=1$', r'$n=4, \ell=2$', r'$n=5, \ell=0$', r'$n=5, \ell=1$']
         FAC_Nshells = int(len(lines)/(254))
         self.FAC_Nshells = FAC_Nshells
         for j in range(FAC_Nshells):

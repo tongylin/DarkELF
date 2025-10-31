@@ -8,3 +8,4 @@ examples/darkelf_tester.ipynb
 *.DS_Store
 examples/heavy_data.csv
 examples/light_data.csv
+.venv
