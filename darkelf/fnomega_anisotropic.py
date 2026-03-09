@@ -213,7 +213,7 @@ def omega_bar_anisotropic_func(self,theta,phi):
 
     q = np.array([np.sin(theta)*np.cos(phi),np.sin(theta)*np.sin(phi),np.cos(theta)])
     directional_DOS = np.einsum('i...,dijk,j...->dk...',q,self.D_d_ij_tensor,q)
-    return np.array(np.trapz(np.einsum('do...,o->do...',directional_DOS,omega),omega,axis=1)) # axis 0 is d, axis 1 is omega 
+    return np.array(np.trapezoid(np.einsum('do...,o->do...',directional_DOS,omega),omega,axis=1)) # axis 0 is d, axis 1 is omega 
 
 # Compute omega_bar_inverse for given material in specified q direction
 def omega_bar_inverse_anisotropic_func(self,theta,phi):
@@ -226,4 +226,4 @@ def omega_bar_inverse_anisotropic_func(self,theta,phi):
     q = np.array([np.sin(theta)*np.cos(phi),np.sin(theta)*np.sin(phi),np.cos(theta)])
     directional_DOS = np.einsum('i...,dijk,j...->dk...',q,self.D_d_ij_tensor,q)
 
-    return np.array(np.trapz(np.einsum('do...,o->do...',directional_DOS,1/omega),omega,axis=1)) # axis 0 is d, axis 1 is omega 
+    return np.array(np.trapezoid(np.einsum('do...,o->do...',directional_DOS,1/omega),omega,axis=1)) # axis 0 is d, axis 1 is omega 

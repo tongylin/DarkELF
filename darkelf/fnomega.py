@@ -32,8 +32,8 @@ def C_ld(self, qrange, omega, d, q_IA_factor = 2):
     For q < q_IA_factor*sqrt(2 m_d omega_bar_d), it uses the multiphonon expansion from Fn(omega) files.
     For q >= q_IA_factor*sqrt(2 m_d omega_bar_d), it uses the impulse approximation.
 
-    The function checks whether the qrange is physical, but does not check if single phonon analysis
-    should be used instead of the multiphonon expansion.
+    Note that the function should not be used in the regime q < few keV, omega < omega_1phonon. 
+    There the single phonon analysis should be used, which uses the full coherent autocorrelation function.
 
     Inputs
     ------
@@ -45,13 +45,17 @@ def C_ld(self, qrange, omega, d, q_IA_factor = 2):
         integer specifying atom in the crystal. index is same as used for Avec
     """
 
-    if omega > self.omegaDMmax:
-        return 0
+    
 
-    qmin = self.qmin(omega)
-    qmax = self.qmax(omega)
-
-    assert qrange[0] >= qmin and qrange[-1] <= qmax, "the range of q's is unphysical"
+    # Check if qrange and omega are physical -- removed to allow for visualization and access to C_ld
+    #  over entire q range. 
+    #
+    # if omega > self.omegaDMmax:
+    #    return 0
+    #  
+    # qmin = self.qmin(omega)
+    # qmax = self.qmax(omega)
+    # assert qrange[0] >= qmin and qrange[-1] <= qmax, "the range of q's is unphysical"
 
 
     # for q>q_IA_cut, the impulse approximation is used
