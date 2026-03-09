@@ -62,16 +62,40 @@ def dRdEn_nuclear(self,En,sigma_n=1e-38):
     """
     scalar_input = np.isscalar(En)
 
-    En = np.atleast_1d(En)
+    En = np.atleast_1d(np.asarray(En, dtype=float))
+    rt = np.zeros_like(En)
 
-    q = np.sqrt(2*self.mN*En)
-    vmin = q/(2.0*self.muxN)
+    valid = En >= 0
+    if np.any(valid):
+        En_valid = En[valid]
+        mN = self.Avec * self.mp
+        muxN = self.mX * mN / (self.mX + mN)
 
-    # rate in 1/kg/yr/eV
-    rt = np.heaviside( self.vesc + self.veavg - vmin, 0) * \
-        self.NUCkg * self.rhoX/self.mX * sigma_n * self.c0cms * 86400 * 365.* \
-        np.sum( self.Avec**2 * self.Amult * self.Avec * self.mp)/(2*self.muxnucleon**2) * self.etav(vmin)*  \
-        self.Fmed_nucleus_SI(q)**2 # Form factor mediator
+        q = np.sqrt(2 * mN[:, None] * En_valid[None, :])
+        vmin = q / (2.0 * muxN[:, None])
+
+        prefactor = (
+            self.NUCkg
+            * self.rhoX / self.mX
+            * sigma_n
+            * self.c0cms
+            * 86400
+            * 365.0
+            / (2 * self.muxnucleon**2)
+        )
+
+        etav = np.array([self.etav(vmin_i) for vmin_i in vmin])
+
+        species_rate = (
+            self.Amult[:, None]
+            * self.Avec[:, None]**2
+            * self.Avec[:, None] * self.mp
+            * np.heaviside(self.vesc + self.veavg - vmin, 0)
+            * etav
+            * self.Fmed_nucleus_SI(q)**2
+        )
+        rt[valid] = prefactor * np.sum(species_rate, axis=0)
+
     if(scalar_input):
         return rt[0]
     else:
