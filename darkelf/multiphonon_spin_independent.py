@@ -106,23 +106,41 @@ def R_multiphonons_SI(self, threshold, sigman=1e-38, dark_photon=False):
 def _dR_domega_multiphonons_SI(self, omega, sigman=1e-38, dark_photon=False, npoints=200):
 
     '''dR_domega single-phonon coherent removed'''
+
     if(dark_photon): # check if effective charges are loaded
         assert self.fd_loaded, "Error: effective charge not loaded. Cannot perform calculation for dark photon mediator."
 
     if omega > self.omegaDMmax:
         return 0
 
-    if (omega > self.dos_omega_range[-1]):
-        qmin = self.qmin(omega)
-    else: ## For q<qBZ and omega<max phonon energy, we use the single phonon rate.
-        qmin = max(self.qmin(omega), self.qBZ)
-
+    
+    qmin = self.qmin(omega)
     qmax = self.qmax(omega)
 
     if qmin >= qmax:
         return 0
     
-    qrange = np.linspace(qmin, qmax, npoints)
+    # If qmin <= qBZ, split the integration region into the < qBZ part and the > qBZ part.
+    # In the region q < qBZ, we include multiphonons n >= 2 (n=1 must be covered by coherent single phonon contribution)
+    # In the region q > qBZ, we include multiphonons n >= 1
+    if qmin < self.qBZ:
+        npoints1 = int( np.max([ npoints * (self.qBZ - qmin)/(qmax - qmin), 10 ] ) )
+        qrange1 = np.linspace(qmin, self.qBZ, npoints1)
+        npoints2 = int( np.max([ npoints * (qmax - self.qBZ)/(qmax - qmin), 10 ] ) )
+        qrange2 = np.linspace(self.qBZ, qmax, npoints2)
+        dR_domega = self._dR_domega_multiphonons_SI_qrange(omega, qrange1, 
+                             dark_photon=dark_photon, npoints=npoints1, n_min=2) + \
+                    self._dR_domega_multiphonons_SI_qrange(omega, qrange2, 
+                             dark_photon=dark_photon, npoints=npoints2, n_min=1)
+    else:
+        qrange = np.linspace(qmin, qmax, npoints)
+        dR_domega = self._dR_domega_multiphonons_SI_qrange(omega, qrange, 
+                             dark_photon=dark_photon, npoints=npoints, n_min=1)
+
+    return self._R_multiphonons_prefactor_SI(sigman) * dR_domega
+
+
+def _dR_domega_multiphonons_SI_qrange(self, omega, qrange, dark_photon=False, npoints=200, n_min=1):
 
     # Choice of effective coupling
     if dark_photon:
@@ -135,14 +153,16 @@ def _dR_domega_multiphonons_SI(self, omega, sigman=1e-38, dark_photon=False, npo
     S = 0
     for d in range(len(self.atoms)):
         # This is structure factor divided by (2 pi/ omega_c)
-        S += self.Amult[d] * fd[d]**2 * self.C_ld(qrange, omega, d)
+        S += self.Amult[d] * fd[d]**2 * self.C_ld(qrange, omega, d, n_min=n_min)
 
     # add contributions from all atoms
     dR_domega_dq = S * qrange * formfactorsquared * self.etav((qrange/(2*self.mX)) + omega/qrange)
 
     dR_domega = np.trapz(dR_domega_dq, qrange)
+
+    return dR_domega
     
-    return self._R_multiphonons_prefactor_SI(sigman) * dR_domega
+
  
 ############################################################################################
 #

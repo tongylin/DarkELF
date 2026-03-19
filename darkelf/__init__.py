@@ -217,7 +217,7 @@ class darkelf(object):
 
     from .multiphonon_spin_independent import sigma_multiphonons_SI, R_multiphonons_SI, R_single_phonon
     from .multiphonon_spin_independent import _R_single_optical, _R_single_acoustic, _dR_domega_coherent_single
-    from .multiphonon_spin_independent import _dR_domega_multiphonons_SI, _R_multiphonons_prefactor_SI
+    from .multiphonon_spin_independent import _dR_domega_multiphonons_SI, _dR_domega_multiphonons_SI_qrange, _R_multiphonons_prefactor_SI
     from .multiphonon_spin_independent import load_fd_darkphoton
 
     from .multiphonon_spin_dependent import sigma_multiphonons_SD, R_multiphonons_SD

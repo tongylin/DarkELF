@@ -26,7 +26,7 @@ def debye_waller(self, q):
 # Calculates the C_ld's using both multiphonon expansion and impulse approximation.
 # Note that here we do NOT include the factor of 2*pi which appears in the structure factor.
 
-def C_ld(self, qrange, omega, d, q_IA_factor = 2):
+def C_ld(self, qrange, omega, d, q_IA_factor = 2, n_min = 1):
     """
     Calculates the auto-correlation function C_ld(q, omega), which is independent of the lattice site.
     For q < q_IA_factor*sqrt(2 m_d omega_bar_d), it uses the multiphonon expansion from Fn(omega) files.
@@ -73,7 +73,7 @@ def C_ld(self, qrange, omega, d, q_IA_factor = 2):
 
     # n_min: minimum number of phonons 
     # n_max_plus_one: maximum number of phonons + 1 (since range below goes up to n_max - 1)
-    n_min = int(np.ceil(omega / self.dos_omega_range[1]))
+    n_min = int(np.max( [ np.ceil(omega / self.dos_omega_range[1]), n_min ] ))
     n_max_plus_one = len(self.phonon_Fn[d])
 
     # Calculation of the c_ld's via multiphonon expansion
