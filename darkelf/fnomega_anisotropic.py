@@ -125,7 +125,7 @@ def F_n_omega_anisotropic(self,theta,phi,datadir=None, dos_filename=None, phonon
             for d in range(num_d):
                 T_n_minus_1_func[d] = interp1d(omegarange,T_n_array[n-1][d],fill_value=0,bounds_error=False)
                 
-                T_n_array[n][d] = np.array([[(np.trapz(np.multiply(T_1[d],\
+                T_n_array[n][d] = np.array([[(integrate.trapezoid(np.multiply(T_1[d],\
                         T_n_minus_1_func[d](np.tile(W,len(omega))-omega)),\
                             omega)) for W in omegarange]])
 

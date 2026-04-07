@@ -161,7 +161,7 @@ def create_Fn_omega(self,datadir=None, dos_filename=None, phonons = 10, npoints=
 
         for n in range(1,phonons):
             Tn_array = np.append(Tn_array, \
-                                  [ [np.trapz(T1_d[atom]*T_n_minus_1_interp(W-omega_d[atom]), omega_d[atom]) for W in omegarange] ], axis=0)
+                                  [ [integrate.trapezoid(T1_d[atom]*T_n_minus_1_interp(W-omega_d[atom]), omega_d[atom]) for W in omegarange] ], axis=0)
             Fn_array = np.append(Fn_array, [Tn_array[-1]/factorial(n+1)],axis=0)
 
             # Update the T_(n-1) function using the last computed integral
@@ -201,8 +201,8 @@ def load_phonon_dos(self,datadir,filename):
         self.dos_omega_range = np.array([ self.phonon_DoS[0][0][0], self.phonon_DoS[0][0][-1] ])
         # Assuming same omega range for all pDOS!
 
-        self.omega_bar = np.array([np.trapz(i[1]*i[0], x=i[0]) for i in self.phonon_DoS])
-        self.omega_inverse_bar = np.array([np.trapz([i[1][j]/i[0][j] if i[0][j] != 0 else 0 for j in range(len(i[0]))],
+        self.omega_bar = np.array([integrate.trapezoid(i[1]*i[0], x=i[0]) for i in self.phonon_DoS])
+        self.omega_inverse_bar = np.array([integrate.trapezoid([i[1][j]/i[0][j] if i[0][j] != 0 else 0 for j in range(len(i[0]))],
                                                 x=i[0]) for i in self.phonon_DoS])
         # if else statement in second line so that there's no divide by 0 error at omega = 0
     else:
