@@ -44,7 +44,7 @@ def debye_waller_anisotropic(self,q,theta,phi):
     D_d_q_array = np.einsum('i...,dijk,j...->dk...',q_cart,self.D_d_ij_tensor,q_cart)
     #D_d^q(omega)
 
-    W_d_array = np.array(q**2 / (4*self.mN_vector) * np.trapz(D_d_q_array/self.phonon_DoS_anisotropic[0],self.phonon_DoS_anisotropic[0]))
+    W_d_array = np.array(q**2 / (4*self.mN_vector) * integrate.trapezoid(D_d_q_array/self.phonon_DoS_anisotropic[0],self.phonon_DoS_anisotropic[0]))
 
     return W_d_array
 
@@ -68,7 +68,7 @@ def debye_waller_vector_anisotropic(self,q,theta,phi):
         # swap axes to ensure indexed properly -- move (d,omega,theta,phi) to (d,theta,phi,omega)
         
         # indexing is (d, q, theta, phi)
-        W_d_array = np.array([[qi**2 / (4*self.mN_vector[d]) * np.trapz(\
+        W_d_array = np.array([[qi**2 / (4*self.mN_vector[d]) * integrate.trapezoid(\
             D_d_q_array[d]/self.phonon_DoS_anisotropic[0],self.phonon_DoS_anisotropic[0]) for qi in q] for d in range(num_d)])
 
         return W_d_array
@@ -253,9 +253,9 @@ def R_multiphonons_anisotropic(self,t,threshold,N_angular=40,sigman=1.e-38,dark_
         integrand_vals_dR_domega_dphi = np.einsum('tpw,t->tpw',self.dR_dtheta_dphi_domega(theta_range,phi_range,omega_grid_linear,t,sigman,n_min,n_max,dark_photon),\
                                         np.sin(theta_range),optimize='optimal') #full integrand vals
         
-        integrand_vals_dR_domega = np.trapz(integrand_vals_dR_domega_dphi,theta_range,axis=0) #integrate wrt theta
-        integrand_values_linear = np.trapz(integrand_vals_dR_domega,phi_range,axis=0) #integrate wrt phi
-        R_linear = np.trapz(integrand_values_linear,omega_grid_linear) #integrate wrt omega
+        integrand_vals_dR_domega = integrate.trapezoid(integrand_vals_dR_domega_dphi,theta_range,axis=0) #integrate wrt theta
+        integrand_values_linear = integrate.trapezoid(integrand_vals_dR_domega,phi_range,axis=0) #integrate wrt phi
+        R_linear = integrate.trapezoid(integrand_values_linear,omega_grid_linear) #integrate wrt omega
 
     else:
         R_linear = 0.0
@@ -265,9 +265,9 @@ def R_multiphonons_anisotropic(self,t,threshold,N_angular=40,sigman=1.e-38,dark_
         integrand_vals_dR_domega_dphi = np.einsum('tpw,t->tpw',self.dR_dtheta_dphi_domega(theta_range,phi_range,omega_grid_log,t,sigman,n_min,n_max,dark_photon),\
                                         np.sin(theta_range),optimize='optimal') #full integrand vals
 
-        integrand_vals_dR_domega = np.trapz(integrand_vals_dR_domega_dphi,theta_range,axis=0) #integrate wrt theta
-        integrand_values_log = np.trapz(integrand_vals_dR_domega,phi_range,axis=0) #integrate wrt phi
-        R_log = np.trapz(integrand_values_log,omega_grid_log) #integrate wrt omega
+        integrand_vals_dR_domega = integrate.trapezoid(integrand_vals_dR_domega_dphi,theta_range,axis=0) #integrate wrt theta
+        integrand_values_log = integrate.trapezoid(integrand_vals_dR_domega,phi_range,axis=0) #integrate wrt phi
+        R_log = integrate.trapezoid(integrand_values_log,omega_grid_log) #integrate wrt omega
     else:
         R_log = 0
 
@@ -292,8 +292,8 @@ def _dR_domega_anisotropic(self,omega,t,N_angular=40,sigman=1.e-38,dark_photon=F
     integrand_vals_dR_domega_dphi = np.einsum('tpw,t->tpw',self.dR_dtheta_dphi_domega(theta_range,phi_range,omega,t,sigman,n_min,n_max,dark_photon),\
                                     np.sin(theta_range),optimize='optimal') #full integrand vals
     
-    integrand_vals_dR_domega = np.trapz(integrand_vals_dR_domega_dphi,theta_range,axis=0) #integrate wrt theta
-    return np.trapz(integrand_vals_dR_domega,phi_range,axis=0)
+    integrand_vals_dR_domega = integrate.trapezoid(integrand_vals_dR_domega_dphi,theta_range,axis=0) #integrate wrt theta
+    return integrate.trapezoid(integrand_vals_dR_domega,phi_range,axis=0)
 
 # Calculates R(t)/<R> for a given time of day and energy threshold. Returns a scalar.
 def modulation_fraction_anisotropic(self,t,threshold,sigman=1e-38,dark_photon=False):
@@ -301,7 +301,7 @@ def modulation_fraction_anisotropic(self,t,threshold,sigman=1e-38,dark_photon=Fa
     
     time_array = np.linspace(0,24,10)
     rates = np.array([self.R_multiphonons_anisotropic(t,threshold,sigman,dark_photon) for t in time_array])
-    avg_rate = np.trapz(rates,time_array,axis=0)/24
+    avg_rate = integrate.trapezoid(rates,time_array,axis=0)/24
     return rate_t/avg_rate
 
 # Compute N_ev - number of events to see a modulation at the 2 sigma level.
@@ -313,7 +313,7 @@ def num_events_modulation_anisotropic(self,threshold,sigman=1e-38,dark_photon=Fa
     
     time_array = np.linspace(0,24,10)
     rates = np.array([self.R_multiphonons_anisotropic(t,threshold,dark_photon) for t in time_array])
-    avg_rate = np.trapz(rates,time_array,axis=0)/24
+    avg_rate = integrate.trapezoid(rates,time_array,axis=0)/24
 
     rate_max = rates[0]
     A_mod = np.abs(rate_max - avg_rate)/avg_rate
@@ -326,7 +326,7 @@ def num_events_modulation_anisotropic(self,threshold,sigman=1e-38,dark_photon=Fa
 def sigma_modulation_anisotropic(self,threshold,sigman=1e-38,dark_photon=False):
     time_array = np.linspace(0,24,10)
     rates = np.array([self.R_multiphonons_anisotropic(t,threshold,sigman,dark_photon) for t in time_array])
-    avg_rate = np.trapz(rates,time_array,axis=0)/24
+    avg_rate = integrate.trapezoid(rates,time_array,axis=0)/24
     rate_max = rates[0]
     A_mod = np.abs(rate_max - avg_rate)/avg_rate
     N_ev = 4/(A_mod**2)
@@ -371,7 +371,7 @@ def dR_dtheta_dphi_domega(self,theta_grid,phi_grid,omega,t,sigman,n_min,n_max,da
                             self.structure_factor_anisotropic(q_range_recursive,theta_grid,phi_grid,omega,n_min,n_max,dark_photon),\
                             kinematic_function_vector(self,q_range_recursive,theta_grid,phi_grid,omega,t),optimize='optimal')
 
-        recursive_part = np.trapz(integrand_vals,q_range_recursive,axis=0) 
+        recursive_part = integrate.trapezoid(integrand_vals,q_range_recursive,axis=0) 
 
     # Impulse approximation part of integral:
     if(q_impulse_approx > q_limit_upper):
@@ -382,7 +382,7 @@ def dR_dtheta_dphi_domega(self,theta_grid,phi_grid,omega,t,sigman,n_min,n_max,da
                                         kinematic_function_vector(self,q_range_impulse,theta_grid,phi_grid,omega,t),
                                         self.impulse_approximation_anisotropic(q_range_impulse,omega,dark_photon),optimize='optimal')
      
-        impulse_part = np.trapz(integrand_values_impulse,q_range_impulse,axis=0)
+        impulse_part = integrate.trapezoid(integrand_values_impulse,q_range_impulse,axis=0)
 
     return constant * (recursive_part + impulse_part)
 

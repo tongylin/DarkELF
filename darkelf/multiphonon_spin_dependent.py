@@ -96,14 +96,14 @@ def R_multiphonons_SD(self, threshold, sigman=1e-38, nuclear_recoil=False):
         if(threshold<self.dos_omega_range[-1]):
             omegarange_linear=np.linspace(threshold,np.min([self.dos_omega_range[-1],self.omegaDMmax]), npoints)
             dR_linear=[self._dR_domega_multiphonons_SD(omega, sigman=sigman, nuclear_recoil=nuclear_recoil) for omega in omegarange_linear]
-            R_linear=np.trapz(dR_linear, omegarange_linear)
+            R_linear=integrate.trapezoid(dR_linear, omegarange_linear)
         else:
             R_linear=0.0
         if(self.omegaDMmax>self.dos_omega_range[-1]):
             omegarange_log=np.logspace(np.max([np.log10(self.dos_omega_range[-1]),np.log10(threshold)]),\
                                      np.log10(self.omegaDMmax), npoints)
             dR_log=[self._dR_domega_multiphonons_SD(omega, sigman=sigman, nuclear_recoil=nuclear_recoil) for omega in omegarange_log]
-            R_log=np.trapz(dR_log, omegarange_log)
+            R_log=integrate.trapezoid(dR_log, omegarange_log)
         else:
             R_log=0
 
@@ -148,7 +148,7 @@ def _dR_domega_multiphonons_SD(self, omega, sigman=1e-38, npoints=200, nuclear_r
         dR_domega_dq = S * qrange * formfactorsquared * self.etav((qrange/(2*self.mX)) + omega/qrange)
     else:
         raise Exception("This spin dependent operator has not yet been defined")
-    dR_domega = np.trapz(dR_domega_dq, qrange)
+    dR_domega = integrate.trapezoid(dR_domega_dq, qrange)
 
     return self._R_multiphonons_prefactor_SD(sigman) * dR_domega
 

@@ -86,14 +86,14 @@ def R_multiphonons_SI(self, threshold, sigman=1e-38, dark_photon=False):
         if(threshold<self.dos_omega_range[-1]):
             omegarange_linear=np.linspace(threshold,np.min([self.dos_omega_range[-1],self.omegaDMmax]), npoints)
             dR_linear=[self._dR_domega_multiphonons_SI(omega, sigman=sigman, dark_photon=dark_photon) for omega in omegarange_linear]
-            R_linear=np.trapz(dR_linear, omegarange_linear)
+            R_linear=integrate.trapezoid(dR_linear, omegarange_linear)
         else:
             R_linear=0.0
         if(self.omegaDMmax>self.dos_omega_range[-1]):
             omegarange_log=np.logspace(np.max([np.log10(self.dos_omega_range[-1]),np.log10(threshold)]),\
                                      np.log10(self.omegaDMmax), npoints)
             dR_log=[self._dR_domega_multiphonons_SI(omega, sigman=sigman, dark_photon=dark_photon) for omega in omegarange_log]
-            R_log=np.trapz(dR_log, omegarange_log)
+            R_log=integrate.trapezoid(dR_log, omegarange_log)
         else:
             R_log=0
 
@@ -158,7 +158,7 @@ def _dR_domega_multiphonons_SI_qrange(self, omega, qrange, dark_photon=False, np
     # add contributions from all atoms
     dR_domega_dq = S * qrange * formfactorsquared * self.etav((qrange/(2*self.mX)) + omega/qrange)
 
-    dR_domega = np.trapz(dR_domega_dq, qrange)
+    dR_domega = integrate.trapezoid(dR_domega_dq, qrange)
 
     return dR_domega
     
@@ -305,7 +305,7 @@ def _R_single_optical(self, threshold, sigman=1e-38, dark_photon=False):
 
     dR_dq_optical = optical_part*velocity_part*formfactorsquared
 
-    optical_rate = np.trapz(dR_dq_optical, qrange)
+    optical_rate = integrate.trapezoid(dR_dq_optical, qrange)
 
     return self._R_multiphonons_prefactor_SI(sigman)*optical_rate
 
@@ -336,7 +336,7 @@ def _R_single_acoustic(self, threshold, sigman=1e-38, dark_photon=False):
                 formfactorsquared*self.etav((omegarange/self.cLA)/(2*self.mX)
                                             + omegarange/(omegarange/self.cLA)))
 
-    acoustic_rate = np.trapz(dR_domega_acoustic, omegarange)
+    acoustic_rate = integrate.trapezoid(dR_domega_acoustic, omegarange)
 
     return self._R_multiphonons_prefactor_SI(sigman)*acoustic_rate
 
