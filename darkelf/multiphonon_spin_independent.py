@@ -332,7 +332,8 @@ def _R_single_acoustic(self, threshold, sigman=1e-38, dark_photon=False):
     else:
         fd = np.tile(np.array([self.Avec*self.Amult]),(npoints, 1)).T*sqrt(self.debye_waller(omegarange/self.cLA)).T
 
-    dR_domega_acoustic = (np.sum(fd,axis=0))**2*((1/(self.mp*np.sum(self.Avec*self.Amult)))*((omegarange/self.cLA)**2/self.cLA**2)*
+    # S_LA = (2 pi/Omega_c) (sum_d A_d) q^2/(2 m_p omega) delta(omega - c_LA q), cf. 2205.02250 and _dR_domega_coherent_single
+    dR_domega_acoustic = (np.sum(fd,axis=0))**2*((1/(2*self.mp*np.sum(self.Avec*self.Amult)))*((omegarange/self.cLA)**2/self.cLA**2)*
                 formfactorsquared*self.etav((omegarange/self.cLA)/(2*self.mX)
                                             + omegarange/(omegarange/self.cLA)))
 

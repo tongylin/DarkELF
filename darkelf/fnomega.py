@@ -18,8 +18,10 @@ def debye_waller(self, q):
     q: array in units of eV. For each q, gives the Debye-Waller factor for each atom '''
 
     one_over_q2_char = self.omega_inverse_bar/(2*self.Avec*self.mp)[None,...]
-    q = q[...,None]
-    return np.where(np.less(one_over_q2_char*q**2, 0.03), 1, exp(-one_over_q2_char*q**2))
+    scalar_input = np.ndim(q) == 0  # for scalar q, return one factor per atom
+    q = np.atleast_1d(q)[...,None]
+    dw = np.where(np.less(one_over_q2_char*q**2, 0.03), 1, exp(-one_over_q2_char*q**2))
+    return dw[0] if scalar_input else dw
 
 
 ##############################################################################
